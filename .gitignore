@@ -18,7 +18,6 @@ wheels/
 output/*_debug/
 .ipynb_checkpoints/
 
-docs/
 ALGORITHM_RU.md
 EXAMPLE_RU.md
 debug.ipynb
