@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 BoolMask = NDArray[np.bool_]
 LabelMap = NDArray[np.int32]
 
-_SQFT_RE = re.compile(r"(\d{2,5})\s*sq", re.IGNORECASE)
+_SQFT_RE = re.compile(r"(\d{1,5})\s*sq", re.IGNORECASE)
 
 
 def parse_total_sqft(name: str) -> float | None:

@@ -35,6 +35,8 @@ def load_bgr(path: str | Path) -> NDArray[np.uint8]:
     ------
     FileNotFoundError
         If the file does not exist or cannot be decoded by OpenCV.
+    ValueError
+        If the image has invalid dimensions (zero width or height).
     """
     path = Path(path)
     if not path.is_file():
@@ -42,6 +44,9 @@ def load_bgr(path: str | Path) -> NDArray[np.uint8]:
     bgr = cv.imread(str(path), cv.IMREAD_COLOR)
     if bgr is None:
         raise FileNotFoundError(f"OpenCV could not decode: {path}")
+    h, w = bgr.shape[:2]
+    if h == 0 or w == 0:
+        raise ValueError(f"image has invalid dimensions: {w}x{h} px")
     return bgr
 
 

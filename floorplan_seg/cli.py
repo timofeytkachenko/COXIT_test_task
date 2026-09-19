@@ -72,10 +72,15 @@ def _config_from_args(args: argparse.Namespace) -> PipelineConfig:
 def _write_debug(seg, out_dir: Path, stem: str) -> None:
     dbg = out_dir / f"{stem}_debug"
     dbg.mkdir(parents=True, exist_ok=True)
-    cv.imwrite(str(dbg / "plan.png"), (seg.plan * 255).astype(np.uint8))
-    cv.imwrite(str(dbg / "wall.png"), (seg.wall * 255).astype(np.uint8))
-    cv.imwrite(str(dbg / "barrier.png"), (seg.barrier * 255).astype(np.uint8))
-    cv.imwrite(str(dbg / "regions.png"), overlay_labels(seg.image, seg.labels))
+    for name, img in [
+        ("plan.png", (seg.plan * 255).astype(np.uint8)),
+        ("wall.png", (seg.wall * 255).astype(np.uint8)),
+        ("barrier.png", (seg.barrier * 255).astype(np.uint8)),
+        ("regions.png", overlay_labels(seg.image, seg.labels)),
+    ]:
+        path = dbg / name
+        if not cv.imwrite(str(path), img):
+            logger.warning("failed to write debug image: %s", path)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -110,7 +115,9 @@ def main(argv: list[str] | None = None) -> int:
     json_path = args.output_dir / f"{stem}.json"
     png_path = args.output_dir / f"{stem}.png"
     write_json(record, json_path)
-    cv.imwrite(str(png_path), annotated_image(seg, record))
+    if not cv.imwrite(str(png_path), annotated_image(seg, record)):
+        logger.error("failed to write output image: %s", png_path)
+        return 1
     if args.debug:
         _write_debug(seg, args.output_dir, stem)
 

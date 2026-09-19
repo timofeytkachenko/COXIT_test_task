@@ -100,6 +100,8 @@ class PlanLabels(BaseModel):
 def _encode_png(bgr: NDArray[np.uint8], max_side: int) -> tuple[str, float]:
     """Return a base64 PNG and the scale factor applied to the image."""
     h, w = bgr.shape[:2]
+    if h == 0 or w == 0:
+        raise SemanticsError(f"image has invalid dimensions: {w}x{h}")
     scale = min(1.0, max_side / float(max(h, w)))
     if scale < 1.0:
         bgr = cv.resize(bgr, (round(w * scale), round(h * scale)),
