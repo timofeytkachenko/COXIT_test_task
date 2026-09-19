@@ -19,6 +19,6 @@ output/*_debug/
 .ipynb_checkpoints/
 
 docs/
-ALGORITHM.md
-EXAMPLES.md
+ALGORITHM_RU.md
+EXAMPLE_RU.md
 debug.ipynb
