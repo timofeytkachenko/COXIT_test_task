@@ -1,0 +1,30 @@
+services:
+  # Geometric pipeline only; no network, no API key required.
+  #   docker compose run --rm segment "data/<file>.webp"
+  segment:
+    build: .
+    image: floorplan-seg:latest
+    volumes:
+      - ./data:/app/data:ro
+      - ./output:/app/output
+    command: ["data/limestone ranch_santa fe_625sq.webp", "--output-dir", "output", "--debug"]
+
+  # Same pipeline plus the optional vision-language stage (room names,
+  # open-plan split). Reads OPENAI_API_KEY from .env if present.
+  #   docker compose run --rm segment-semantic "data/<file>.webp"
+  #
+  # --semantics lives in the entrypoint, not in command: `docker compose run`
+  # replaces command wholesale, so a flag placed there would silently vanish as
+  # soon as the caller passes a file name.
+  segment-semantic:
+    build: .
+    image: floorplan-seg:latest
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./data:/app/data:ro
+      - ./output:/app/output
+    entrypoint: ["uv", "run", "--no-sync", "python", "-m", "floorplan_seg",
+                 "--semantics", "--output-dir", "output/semantic"]
+    command: ["data/limestone ranch_santa fe_625sq.webp"]

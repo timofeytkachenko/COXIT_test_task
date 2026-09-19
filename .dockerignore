@@ -1,0 +1,12 @@
+.git
+.venv
+.env
+.env.*
+__pycache__
+*.py[oc]
+.ipynb_checkpoints
+output
+data
+*.ipynb
+*.png
+*.md
