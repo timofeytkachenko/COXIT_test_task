@@ -55,6 +55,25 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _validate_args(args: argparse.Namespace) -> None:
+    """Validate CLI arguments and raise ValueError if invalid."""
+    errors = []
+    if args.wall_delta_e < 0:
+        errors.append(f"--wall-delta-e must be non-negative, got {args.wall_delta_e}")
+    if args.wall_dilate < 0:
+        errors.append(f"--wall-dilate must be non-negative, got {args.wall_dilate}")
+    if args.h_maxima <= 0:
+        errors.append(f"--h-maxima must be positive, got {args.h_maxima}")
+    if args.merge_width < 0:
+        errors.append(f"--merge-width must be non-negative, got {args.merge_width}")
+    if not 0 <= args.min_area <= 1:
+        errors.append(f"--min-area must be between 0 and 1, got {args.min_area}")
+    if not 0 <= args.simplify <= 1:
+        errors.append(f"--simplify must be between 0 and 1, got {args.simplify}")
+    if errors:
+        raise ValueError("Invalid arguments:\n  " + "\n  ".join(errors))
+
+
 def _config_from_args(args: argparse.Namespace) -> PipelineConfig:
     return PipelineConfig(
         preprocess=PreprocessConfig(
@@ -93,6 +112,12 @@ def main(argv: list[str] | None = None) -> int:
     """
     args = build_parser().parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+
+    try:
+        _validate_args(args)
+    except ValueError as exc:
+        logger.error("%s", exc)
+        return 1
 
     if args.semantics:
         from dotenv import load_dotenv
