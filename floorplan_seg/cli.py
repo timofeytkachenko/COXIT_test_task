@@ -5,14 +5,15 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import cv2 as cv
 import numpy as np
 
 from .config import PipelineConfig, PreprocessConfig, SeedConfig, SemanticsConfig
-from .export import annotated_image, to_record, write_json
-from .pipeline import segment_floorplan
+from .export import DEFAULT_SIMPLIFY, annotated_image, to_record, write_json
+from .pipeline import label_rooms, segment_floorplan
 from .semantics import SemanticsError
 from .viz import overlay_labels
 
@@ -33,9 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     tune = p.add_argument_group("manual tuning (documented light correction)")
     tune.add_argument("--wall-delta-e", type=float, default=PreprocessConfig.wall_delta_e,
-                      help="CIELAB distance to the estimated wall colour (default %(default)s)")
+                      help="distance to the estimated wall colour in OpenCV 8-bit Lab units "
+                           "(default %(default)s)")
     tune.add_argument("--wall-dilate", type=int, default=PreprocessConfig.wall_dilate,
-                      help="barrier dilation in px, covers the shaded wall face (default %(default)s)")
+                      help="side of the square barrier dilation kernel in px; 3 adds a 1 px rim "
+                           "that covers the shaded wall face, 0 disables (default %(default)s)")
     tune.add_argument("--h-maxima", type=float, default=SeedConfig.h_maxima,
                       help="marker significance; raise to get fewer rooms (default %(default)s)")
     tune.add_argument("--merge-width", type=float, default=SeedConfig.passage_merge_width,
@@ -43,7 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
                            "(default %(default)s)")
     tune.add_argument("--min-area", type=float, default=SeedConfig.min_region_area_frac,
                       help="drop regions below this fraction of the plan (default %(default)s)")
-    tune.add_argument("--simplify", type=float, default=0.004,
+    tune.add_argument("--simplify", type=float, default=DEFAULT_SIMPLIFY,
                       help="polygon simplification as fraction of perimeter (default %(default)s)")
 
     sem = p.add_argument_group("optional semantic stage (vision-language model)")
@@ -90,7 +93,9 @@ def main(argv: list[str] | None = None) -> int:
     Returns
     -------
     int
-        Process exit code: 0 on success, 1 on a handled failure.
+        Process exit code: 0 on success, 1 on a handled failure. When only
+        the optional semantic stage fails, the geometric result is still
+        written and the exit code is 1.
     """
     args = build_parser().parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -100,18 +105,27 @@ def main(argv: list[str] | None = None) -> int:
 
         load_dotenv()
 
+    cfg = _config_from_args(args)
     try:
-        seg = segment_floorplan(args.image, _config_from_args(args))
+        # Geometry first, on its own, so that a failing semantic stage
+        # cannot take an already computed result down with it.
+        geometric_cfg = replace(cfg, semantics=SemanticsConfig(enabled=False))
+        seg = segment_floorplan(args.image, geometric_cfg)
     except FileNotFoundError as exc:
         logger.error("%s", exc)
         return 1
     except ValueError as exc:
         logger.error("segmentation failed: %s", exc)
         return 1
-    except SemanticsError as exc:
-        logger.error("semantic stage failed: %s", exc)
-        logger.error("re-run without --semantics for the geometric result")
-        return 1
+
+    exit_code = 0
+    if args.semantics:
+        try:
+            seg = label_rooms(seg, cfg.semantics)
+        except SemanticsError as exc:
+            logger.error("semantic stage failed: %s", exc)
+            logger.error("writing the geometric result without room names")
+            exit_code = 1
 
     record = to_record(seg, simplify=args.simplify)
     stem = args.image.stem
@@ -131,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     for r in record["rooms"]:
         name = r["name"] or f"room {r['id']}"
         logger.info("  %-18s %6.1f%%  %7d px", name, 100 * r["relative_area"], r["area_px"])
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":  # pragma: no cover

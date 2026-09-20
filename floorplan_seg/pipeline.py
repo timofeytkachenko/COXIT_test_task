@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
 
-from .config import PipelineConfig
+from .config import PipelineConfig, SemanticsConfig
 from .preprocess import load_bgr, plan_mask, wall_mask
 from .seeds import region_labels
 from .semantics import apply_labels, request_labels
@@ -157,23 +157,52 @@ def segment_floorplan(
     bgr = load_bgr(path)
     plan = plan_mask(bgr, cfg.preprocess)
     wall, barrier = wall_mask(bgr, plan, cfg.preprocess)
-    labels, distance = region_labels(plan, barrier, cfg.seeds)
+    labels, _ = region_labels(plan, barrier, cfg.seeds)
     logger.info("%s: %d geometric regions", path.name, labels.max())
 
-    names: dict[int, str] | None = None
-    if cfg.semantics.enabled:
-        plan_labels = request_labels(bgr, labels, cfg.semantics)
-        labels, names = apply_labels(labels, plan_labels, cfg.semantics)
-        logger.info("%s: %d named rooms", path.name, labels.max())
-
     total_sqft = parse_total_sqft(path.name)
-    return Segmentation(
+    seg = Segmentation(
         path=path,
         image=bgr,
         plan=plan,
         wall=wall,
         barrier=barrier,
         labels=labels,
-        rooms=_build_rooms(labels, names, total_sqft),
+        rooms=_build_rooms(labels, None, total_sqft),
         total_sqft=total_sqft,
+    )
+    if cfg.semantics.enabled:
+        seg = label_rooms(seg, cfg.semantics)
+    return seg
+
+
+def label_rooms(seg: Segmentation, cfg: SemanticsConfig) -> Segmentation:
+    """Name the rooms of a geometric segmentation and split open-plan areas.
+
+    Kept separate from :func:`segment_floorplan` so that a caller can hold on
+    to the geometric result when the vision-language stage fails.
+
+    Parameters
+    ----------
+    seg
+        Geometric segmentation (names are ignored and recomputed).
+    cfg
+        Semantics parameters; ``cfg.enabled`` is not consulted.
+
+    Returns
+    -------
+    Segmentation
+        New segmentation with renumbered labels and named rooms. ``seg`` is
+        left untouched.
+
+    Raises
+    ------
+    SemanticsError
+        If the API key is absent, the request fails, or the model refuses.
+    """
+    plan_labels = request_labels(seg.image, seg.labels, cfg)
+    labels, names = apply_labels(seg.labels, plan_labels, cfg)
+    logger.info("%s: %d named rooms", seg.path.name, labels.max())
+    return replace(
+        seg, labels=labels, rooms=_build_rooms(labels, names, seg.total_sqft)
     )
