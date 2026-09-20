@@ -13,6 +13,12 @@ dependencies = [
     "scipy>=1.18.1",
 ]
 
+[tool.pytest.ini_options]
+# The project is not installed into the venv (no build-system), so tests
+# import floorplan_seg from the repository root, like `python -m floorplan_seg`.
+pythonpath = ["."]
+testpaths = ["tests"]
+
 [dependency-groups]
 dev = [
     "jupyter>=1.1.1",
