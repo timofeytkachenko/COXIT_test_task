@@ -1,0 +1,726 @@
+{
+  "config": {
+    "min_region_frac": 0.22,
+    "superpixel_px": 900,
+    "compactness": 12.0,
+    "n_finishes": 4,
+    "lightness_weight": 0.3,
+    "chroma_weight": 1.0,
+    "contrast_weight": 1.0,
+    "coherence_weight": 0.5,
+    "seed_min_frac": 0.06,
+    "min_wall_contact": 0.15,
+    "max_zones": 2,
+    "min_zone_frac": 0.18,
+    "min_finish_gap": 1.0,
+    "max_cut_ratio": 1.8
+  },
+  "results": [
+    {
+      "image": "heritage towers_a1_1 Bed 1 Bath 593 Sq. Ft..webp",
+      "short_name": "heritage-towers",
+      "baseline_regions": 9,
+      "approach_regions": 9,
+      "baseline_cuts": {
+        "length_px": 54,
+        "median_width_px": 7.60555127546399,
+        "open_cut_frac": 0.0
+      },
+      "approach_cuts": {
+        "length_px": 54,
+        "median_width_px": 7.60555127546399,
+        "open_cut_frac": 0.0
+      },
+      "agreement_vs_baseline": {
+        "pixel_agreement": 1.0,
+        "mean_iou": 1.0
+      },
+      "baseline_rooms": [
+        {
+          "id": 6,
+          "area_px": 160936,
+          "relative_area": 0.5333,
+          "share_of_plan": 0.3783
+        },
+        {
+          "id": 3,
+          "area_px": 56720,
+          "relative_area": 0.188,
+          "share_of_plan": 0.1333
+        },
+        {
+          "id": 7,
+          "area_px": 37094,
+          "relative_area": 0.1229,
+          "share_of_plan": 0.0872
+        },
+        {
+          "id": 8,
+          "area_px": 20383,
+          "relative_area": 0.0675,
+          "share_of_plan": 0.0479
+        },
+        {
+          "id": 2,
+          "area_px": 12848,
+          "relative_area": 0.0426,
+          "share_of_plan": 0.0302
+        },
+        {
+          "id": 4,
+          "area_px": 5776,
+          "relative_area": 0.0191,
+          "share_of_plan": 0.0136
+        },
+        {
+          "id": 5,
+          "area_px": 2725,
+          "relative_area": 0.009,
+          "share_of_plan": 0.0064
+        },
+        {
+          "id": 1,
+          "area_px": 2697,
+          "relative_area": 0.0089,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 9,
+          "area_px": 2578,
+          "relative_area": 0.0085,
+          "share_of_plan": 0.0061
+        }
+      ],
+      "approach_rooms": [
+        {
+          "id": 6,
+          "area_px": 160936,
+          "relative_area": 0.5333,
+          "share_of_plan": 0.3783
+        },
+        {
+          "id": 3,
+          "area_px": 56720,
+          "relative_area": 0.188,
+          "share_of_plan": 0.1333
+        },
+        {
+          "id": 7,
+          "area_px": 37094,
+          "relative_area": 0.1229,
+          "share_of_plan": 0.0872
+        },
+        {
+          "id": 8,
+          "area_px": 20383,
+          "relative_area": 0.0675,
+          "share_of_plan": 0.0479
+        },
+        {
+          "id": 2,
+          "area_px": 12848,
+          "relative_area": 0.0426,
+          "share_of_plan": 0.0302
+        },
+        {
+          "id": 4,
+          "area_px": 5776,
+          "relative_area": 0.0191,
+          "share_of_plan": 0.0136
+        },
+        {
+          "id": 5,
+          "area_px": 2725,
+          "relative_area": 0.009,
+          "share_of_plan": 0.0064
+        },
+        {
+          "id": 1,
+          "area_px": 2697,
+          "relative_area": 0.0089,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 9,
+          "area_px": 2578,
+          "relative_area": 0.0085,
+          "share_of_plan": 0.0061
+        }
+      ],
+      "candidate_regions": [
+        {
+          "region_id": 6,
+          "region_frac": 0.378,
+          "n_superpixels": 169,
+          "seeds": [
+            {
+              "finish": 1,
+              "area_frac": 0.369,
+              "wall_contact": 0.253,
+              "accepted": true
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.285,
+              "wall_contact": 0.651,
+              "accepted": true
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.242,
+              "wall_contact": 0.396,
+              "accepted": true
+            }
+          ],
+          "decision": "declined: cut wraps an object",
+          "zones": [
+            0.43,
+            0.563
+          ],
+          "finish_gap": 2.31,
+          "cut_ratio": 3.04
+        }
+      ],
+      "committed_semantic_run": [
+        {
+          "name": "entry",
+          "relative_area": 0.5316
+        },
+        {
+          "name": "bathroom",
+          "relative_area": 0.1234
+        },
+        {
+          "name": "living room",
+          "relative_area": 0.1223
+        },
+        {
+          "name": "hallway",
+          "relative_area": 0.0678
+        },
+        {
+          "name": "kitchen",
+          "relative_area": 0.0663
+        },
+        {
+          "name": "bedroom",
+          "relative_area": 0.0427
+        },
+        {
+          "name": "closet",
+          "relative_area": 0.0192
+        },
+        {
+          "name": "mechanical",
+          "relative_area": 0.0091
+        },
+        {
+          "name": "balcony",
+          "relative_area": 0.009
+        },
+        {
+          "name": "closet",
+          "relative_area": 0.0086
+        }
+      ]
+    },
+    {
+      "image": "highlandlux-citadel-1 Bed 1 Bath 623 Sq. Ft..webp",
+      "short_name": "highlandlux",
+      "baseline_regions": 10,
+      "approach_regions": 11,
+      "baseline_cuts": {
+        "length_px": 3,
+        "median_width_px": 2.0,
+        "open_cut_frac": 0.0
+      },
+      "approach_cuts": {
+        "length_px": 495,
+        "median_width_px": 65.14598989960932,
+        "open_cut_frac": 0.7434343434343434
+      },
+      "agreement_vs_baseline": {
+        "pixel_agreement": 0.8369,
+        "mean_iou": 0.8369
+      },
+      "baseline_rooms": [
+        {
+          "id": 2,
+          "area_px": 103477,
+          "relative_area": 0.4978,
+          "share_of_plan": 0.3217
+        },
+        {
+          "id": 7,
+          "area_px": 47892,
+          "relative_area": 0.2304,
+          "share_of_plan": 0.1489
+        },
+        {
+          "id": 9,
+          "area_px": 22391,
+          "relative_area": 0.1077,
+          "share_of_plan": 0.0696
+        },
+        {
+          "id": 3,
+          "area_px": 14768,
+          "relative_area": 0.071,
+          "share_of_plan": 0.0459
+        },
+        {
+          "id": 4,
+          "area_px": 8552,
+          "relative_area": 0.0411,
+          "share_of_plan": 0.0266
+        },
+        {
+          "id": 5,
+          "area_px": 2913,
+          "relative_area": 0.014,
+          "share_of_plan": 0.0091
+        },
+        {
+          "id": 10,
+          "area_px": 2891,
+          "relative_area": 0.0139,
+          "share_of_plan": 0.009
+        },
+        {
+          "id": 8,
+          "area_px": 2041,
+          "relative_area": 0.0098,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 6,
+          "area_px": 1538,
+          "relative_area": 0.0074,
+          "share_of_plan": 0.0048
+        },
+        {
+          "id": 1,
+          "area_px": 1414,
+          "relative_area": 0.0068,
+          "share_of_plan": 0.0044
+        }
+      ],
+      "approach_rooms": [
+        {
+          "id": 2,
+          "area_px": 69575,
+          "relative_area": 0.3347,
+          "share_of_plan": 0.2163
+        },
+        {
+          "id": 8,
+          "area_px": 47892,
+          "relative_area": 0.2304,
+          "share_of_plan": 0.1489
+        },
+        {
+          "id": 3,
+          "area_px": 33902,
+          "relative_area": 0.1631,
+          "share_of_plan": 0.1054
+        },
+        {
+          "id": 10,
+          "area_px": 22391,
+          "relative_area": 0.1077,
+          "share_of_plan": 0.0696
+        },
+        {
+          "id": 4,
+          "area_px": 14768,
+          "relative_area": 0.071,
+          "share_of_plan": 0.0459
+        },
+        {
+          "id": 5,
+          "area_px": 8552,
+          "relative_area": 0.0411,
+          "share_of_plan": 0.0266
+        },
+        {
+          "id": 6,
+          "area_px": 2913,
+          "relative_area": 0.014,
+          "share_of_plan": 0.0091
+        },
+        {
+          "id": 11,
+          "area_px": 2891,
+          "relative_area": 0.0139,
+          "share_of_plan": 0.009
+        },
+        {
+          "id": 9,
+          "area_px": 2041,
+          "relative_area": 0.0098,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 7,
+          "area_px": 1538,
+          "relative_area": 0.0074,
+          "share_of_plan": 0.0048
+        },
+        {
+          "id": 1,
+          "area_px": 1414,
+          "relative_area": 0.0068,
+          "share_of_plan": 0.0044
+        }
+      ],
+      "candidate_regions": [
+        {
+          "region_id": 2,
+          "region_frac": 0.322,
+          "n_superpixels": 108,
+          "seeds": [
+            {
+              "finish": 1,
+              "area_frac": 0.07,
+              "wall_contact": 0.544,
+              "accepted": true
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.471,
+              "wall_contact": 0.242,
+              "accepted": true
+            },
+            {
+              "finish": 3,
+              "area_frac": 0.167,
+              "wall_contact": 0.364,
+              "accepted": true
+            },
+            {
+              "finish": 3,
+              "area_frac": 0.053,
+              "wall_contact": 0.484,
+              "accepted": false
+            },
+            {
+              "finish": 3,
+              "area_frac": 0.07,
+              "wall_contact": 0.117,
+              "accepted": false
+            },
+            {
+              "finish": 3,
+              "area_frac": 0.067,
+              "wall_contact": 0.589,
+              "accepted": true
+            }
+          ],
+          "decision": "split",
+          "zones": [
+            0.672,
+            0.328
+          ],
+          "finish_gap": 1.66,
+          "cut_ratio": 1.53
+        }
+      ],
+      "committed_semantic_run": [
+        {
+          "name": "dining room",
+          "relative_area": 0.3228
+        },
+        {
+          "name": "bedroom",
+          "relative_area": 0.2304
+        },
+        {
+          "name": "living room",
+          "relative_area": 0.175
+        },
+        {
+          "name": "balcony",
+          "relative_area": 0.1077
+        },
+        {
+          "name": "walk-in closet",
+          "relative_area": 0.071
+        },
+        {
+          "name": "bathroom",
+          "relative_area": 0.0411
+        },
+        {
+          "name": "balcony",
+          "relative_area": 0.014
+        },
+        {
+          "name": "laundry",
+          "relative_area": 0.0139
+        },
+        {
+          "name": "closet",
+          "relative_area": 0.0098
+        },
+        {
+          "name": "entry",
+          "relative_area": 0.0074
+        },
+        {
+          "name": "kitchen",
+          "relative_area": 0.0068
+        }
+      ]
+    },
+    {
+      "image": "limestone ranch_santa fe_625sq.webp",
+      "short_name": "limestone-ranch",
+      "baseline_regions": 9,
+      "approach_regions": 10,
+      "baseline_cuts": {
+        "length_px": 0,
+        "median_width_px": 0.0,
+        "open_cut_frac": 0.0
+      },
+      "approach_cuts": {
+        "length_px": 79,
+        "median_width_px": 20.0,
+        "open_cut_frac": 0.26582278481012656
+      },
+      "agreement_vs_baseline": {
+        "pixel_agreement": 0.8912,
+        "mean_iou": 0.8912
+      },
+      "baseline_rooms": [
+        {
+          "id": 3,
+          "area_px": 129628,
+          "relative_area": 0.4222,
+          "share_of_plan": 0.311
+        },
+        {
+          "id": 4,
+          "area_px": 81189,
+          "relative_area": 0.2645,
+          "share_of_plan": 0.1948
+        },
+        {
+          "id": 8,
+          "area_px": 37097,
+          "relative_area": 0.1208,
+          "share_of_plan": 0.089
+        },
+        {
+          "id": 5,
+          "area_px": 22314,
+          "relative_area": 0.0727,
+          "share_of_plan": 0.0535
+        },
+        {
+          "id": 9,
+          "area_px": 12320,
+          "relative_area": 0.0401,
+          "share_of_plan": 0.0296
+        },
+        {
+          "id": 2,
+          "area_px": 9449,
+          "relative_area": 0.0308,
+          "share_of_plan": 0.0227
+        },
+        {
+          "id": 7,
+          "area_px": 7233,
+          "relative_area": 0.0236,
+          "share_of_plan": 0.0174
+        },
+        {
+          "id": 1,
+          "area_px": 4454,
+          "relative_area": 0.0145,
+          "share_of_plan": 0.0107
+        },
+        {
+          "id": 6,
+          "area_px": 3322,
+          "relative_area": 0.0108,
+          "share_of_plan": 0.008
+        }
+      ],
+      "approach_rooms": [
+        {
+          "id": 3,
+          "area_px": 96240,
+          "relative_area": 0.3135,
+          "share_of_plan": 0.2309
+        },
+        {
+          "id": 5,
+          "area_px": 81189,
+          "relative_area": 0.2645,
+          "share_of_plan": 0.1948
+        },
+        {
+          "id": 9,
+          "area_px": 37097,
+          "relative_area": 0.1208,
+          "share_of_plan": 0.089
+        },
+        {
+          "id": 4,
+          "area_px": 33388,
+          "relative_area": 0.1088,
+          "share_of_plan": 0.0801
+        },
+        {
+          "id": 6,
+          "area_px": 22314,
+          "relative_area": 0.0727,
+          "share_of_plan": 0.0535
+        },
+        {
+          "id": 10,
+          "area_px": 12320,
+          "relative_area": 0.0401,
+          "share_of_plan": 0.0296
+        },
+        {
+          "id": 2,
+          "area_px": 9449,
+          "relative_area": 0.0308,
+          "share_of_plan": 0.0227
+        },
+        {
+          "id": 8,
+          "area_px": 7233,
+          "relative_area": 0.0236,
+          "share_of_plan": 0.0174
+        },
+        {
+          "id": 1,
+          "area_px": 4454,
+          "relative_area": 0.0145,
+          "share_of_plan": 0.0107
+        },
+        {
+          "id": 7,
+          "area_px": 3322,
+          "relative_area": 0.0108,
+          "share_of_plan": 0.008
+        }
+      ],
+      "candidate_regions": [
+        {
+          "region_id": 3,
+          "region_frac": 0.311,
+          "n_superpixels": 138,
+          "seeds": [
+            {
+              "finish": 1,
+              "area_frac": 0.246,
+              "wall_contact": 0.457,
+              "accepted": true
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.101,
+              "wall_contact": 0.624,
+              "accepted": true
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.106,
+              "wall_contact": 0.085,
+              "accepted": false
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.03,
+              "wall_contact": 0.46,
+              "accepted": false
+            },
+            {
+              "finish": 2,
+              "area_frac": 0.053,
+              "wall_contact": 0.516,
+              "accepted": false
+            },
+            {
+              "finish": 3,
+              "area_frac": 0.057,
+              "wall_contact": 0.017,
+              "accepted": false
+            },
+            {
+              "finish": 4,
+              "area_frac": 0.042,
+              "wall_contact": 0.364,
+              "accepted": false
+            },
+            {
+              "finish": 4,
+              "area_frac": 0.037,
+              "wall_contact": 0.29,
+              "accepted": false
+            },
+            {
+              "finish": 4,
+              "area_frac": 0.161,
+              "wall_contact": 0.496,
+              "accepted": true
+            }
+          ],
+          "decision": "split",
+          "zones": [
+            0.742,
+            0.258
+          ],
+          "finish_gap": 2.49,
+          "cut_ratio": 0.22
+        }
+      ],
+      "committed_semantic_run": [
+        {
+          "name": "bedroom",
+          "relative_area": 0.2605
+        },
+        {
+          "name": "living room",
+          "relative_area": 0.2336
+        },
+        {
+          "name": "kitchen",
+          "relative_area": 0.1909
+        },
+        {
+          "name": "bathroom",
+          "relative_area": 0.1215
+        },
+        {
+          "name": "walk-in closet",
+          "relative_area": 0.0731
+        },
+        {
+          "name": "storage",
+          "relative_area": 0.0403
+        },
+        {
+          "name": "entry",
+          "relative_area": 0.0309
+        },
+        {
+          "name": "laundry",
+          "relative_area": 0.0237
+        },
+        {
+          "name": "balcony",
+          "relative_area": 0.0146
+        },
+        {
+          "name": "closet",
+          "relative_area": 0.0109
+        }
+      ]
+    }
+  ]
+}
