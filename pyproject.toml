@@ -7,12 +7,15 @@ requires-python = ">=3.13"
 dependencies = [
     "openai>=3.16.2",
     "opencv-python-headless>=5.0.0.93",
+    "pydantic>=2.13.5",
     "python-dotenv>=1.2.3",
     "scikit-image>=0.26.0",
+    "scipy>=1.18.1",
 ]
 
 [dependency-groups]
 dev = [
     "jupyter>=1.1.1",
     "matplotlib>=3.11.2",
+    "pytest>=9.1.1",
 ]
