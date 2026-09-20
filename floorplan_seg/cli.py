@@ -69,13 +69,19 @@ def _config_from_args(args: argparse.Namespace) -> PipelineConfig:
     )
 
 
+def _imwrite(path: Path, image: np.ndarray) -> None:
+    """Write an image, raising instead of returning ``False`` on failure."""
+    if not cv.imwrite(str(path), image):
+        raise OSError(f"could not write image: {path}")
+
+
 def _write_debug(seg, out_dir: Path, stem: str) -> None:
     dbg = out_dir / f"{stem}_debug"
     dbg.mkdir(parents=True, exist_ok=True)
-    cv.imwrite(str(dbg / "plan.png"), (seg.plan * 255).astype(np.uint8))
-    cv.imwrite(str(dbg / "wall.png"), (seg.wall * 255).astype(np.uint8))
-    cv.imwrite(str(dbg / "barrier.png"), (seg.barrier * 255).astype(np.uint8))
-    cv.imwrite(str(dbg / "regions.png"), overlay_labels(seg.image, seg.labels))
+    _imwrite(dbg / "plan.png", (seg.plan * 255).astype(np.uint8))
+    _imwrite(dbg / "wall.png", (seg.wall * 255).astype(np.uint8))
+    _imwrite(dbg / "barrier.png", (seg.barrier * 255).astype(np.uint8))
+    _imwrite(dbg / "regions.png", overlay_labels(seg.image, seg.labels))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -99,6 +105,9 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         logger.error("%s", exc)
         return 1
+    except ValueError as exc:
+        logger.error("segmentation failed: %s", exc)
+        return 1
     except SemanticsError as exc:
         logger.error("semantic stage failed: %s", exc)
         logger.error("re-run without --semantics for the geometric result")
@@ -106,13 +115,17 @@ def main(argv: list[str] | None = None) -> int:
 
     record = to_record(seg, simplify=args.simplify)
     stem = args.image.stem
-    args.output_dir.mkdir(parents=True, exist_ok=True)
     json_path = args.output_dir / f"{stem}.json"
     png_path = args.output_dir / f"{stem}.png"
-    write_json(record, json_path)
-    cv.imwrite(str(png_path), annotated_image(seg, record))
-    if args.debug:
-        _write_debug(seg, args.output_dir, stem)
+    try:
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        write_json(record, json_path)
+        _imwrite(png_path, annotated_image(seg, record))
+        if args.debug:
+            _write_debug(seg, args.output_dir, stem)
+    except OSError as exc:
+        logger.error("could not write results: %s", exc)
+        return 1
 
     logger.info("%d rooms -> %s, %s", len(record["rooms"]), png_path, json_path)
     for r in record["rooms"]:

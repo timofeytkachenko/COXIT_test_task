@@ -145,6 +145,9 @@ def segment_floorplan(
     ------
     FileNotFoundError
         If the image cannot be read.
+    ValueError
+        If no plan can be found in the image (blank page, degenerate plan
+        mask) or a configuration value is out of range.
     SemanticsError
         If the semantic stage is enabled but fails.
     """
