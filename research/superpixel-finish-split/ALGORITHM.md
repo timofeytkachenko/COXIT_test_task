@@ -29,10 +29,11 @@ most work: the naive version happily cut bedrooms into "bed" and "floor".
 3. [Step by step](#3-step-by-step)
 4. [The two guards](#4-the-two-guards)
 5. [Applied to the three renders](#5-applied-to-the-three-renders)
-6. [Against the committed vision-language run](#6-against-the-committed-vision-language-run)
-7. [What improved, what got worse](#7-what-improved-what-got-worse)
-8. [Limitations](#8-limitations)
-9. [Regenerating the assets](#9-regenerating-the-assets)
+6. [How much of this is the features? An ablation](#6-how-much-of-this-is-the-features-an-ablation)
+7. [Against the committed vision-language run](#7-against-the-committed-vision-language-run)
+8. [What improved, what got worse](#8-what-improved-what-got-worse)
+9. [Limitations](#9-limitations)
+10. [Regenerating the assets](#10-regenerating-the-assets)
 
 ---
 
@@ -81,13 +82,17 @@ Three decisions carry the method, and each was forced by a failure:
 - **superpixels, not pixels** — a photoreal floor is noisy, and clustering raw
   pixels produces confetti. SLIC gives ~100–170 regions per open-plan area,
   each already respecting the material edges.
-- **an illumination-damped feature vector** — the first version clustered on
-  CIELAB alone and cut the sunlit half of a living room away from its shaded
-  half. In the sample, the sunlit floor is 46 L-units away from the same floor
-  in shade, while the wood and the carpet are 51 apart: *lightness alone cannot
-  tell a material change from a sunbeam*.
 - **"is it floor?" before "is it different?"** — the strongest appearance
-  boundary in a living room is the sofa, not the flooring.
+  boundary in a living room is the sofa, not the flooring, so a cluster has to
+  earn the right to be a seed.
+- **at most two zones, then a shape test on the cut** — lighting splits one
+  material into two clusters. On `limestone ranch` the lit part of the living
+  floor and its shaded part are 41 units of OpenCV's 8-bit `L` apart, while
+  that floor and the plank floor are 40 apart: *within one material, lighting
+  spans the same distance as the material change itself*. The defences that
+  work are keeping only the two largest floor seeds and testing the shape of
+  the cut; the feature engineering meant to solve it does not, which is
+  measured in [§6](#6-how-much-of-this-is-the-features-an-ablation).
 
 ## 3. Step by step
 
@@ -105,21 +110,28 @@ Code: [`approach.py`](approach.py). Defaults:
 
 Five numbers, standardised over the region and then weighted:
 
-| Feature | Weight | Why |
+| Feature | Weight | Intended role |
 |---|---|---|
 | `L` (median lightness) | 0.3 | carries the material, but also the lighting — damped, not dropped |
 | `a`, `b` (median chroma) | 1.0 | warm plank vs neutral tile vs beige carpet |
-| mean \|∇L\| / mean `L` | 1.0 | texture energy, **divided by brightness** so it is invariant to a multiplicative change in illumination |
+| mean \|∇L\| / mean `L` | 1.0 | texture energy, **divided by brightness**, so a multiplicative change in illumination cancels |
 | structure-tensor coherence | 0.5 | plank flooring has one dominant orientation; carpet has none |
 
-The normalised contrast is what makes the sunbeam harmless: brightening a
-surface scales its gradients by the same factor, and the ratio does not move.
+The design intent was that the normalised contrast makes a sunbeam harmless:
+brightening a surface scales its gradients by the same factor and the ratio
+does not move. It does behave that way — but [§6](#6-how-much-of-this-is-the-features-an-ablation)
+shows it is not what produces the results below.
 
 ![appearance clusters](assets/limestone-ranch-07-finish-clusters.webp)
 
-*Four Ward clusters. Orange is the light floor — note that it keeps the sunlit
-strip near the windows, which lightness-only clustering split off. Magenta is
-the plank floor, green the white furniture and counters, blue the dark sofa.*
+*Four Ward clusters on the open-plan region of `limestone ranch`, with their
+median 8-bit `L`: orange the shaded light floor (166, 27 % of the region),
+magenta the plank floor (126, 31 %), green everything bright — the sunlit floor
+near the windows together with the white counters (207, 33 %), blue the sofa
+(59, 9 %). The sunlit floor being its own cluster is exactly the failure mode
+the feature weighting was meant to prevent, and it happens anyway; what saves
+the result is that its patches lose on wall contact and on size in the next
+two steps.*
 
 ### 3.3 Decide which clusters are floor
 
@@ -137,8 +149,19 @@ stretch.
 *`highlandlux`: the white kitchen tile (23 % of the region, 59 % of its outline
 against a wall) and the beige living floor (47 %, 24 %). Both accepted.*
 
-Only the two largest surviving finishes are kept (`max_zones=2`). The third
-cluster, on all three renders, is a lighting artefact or a furniture group.
+On `limestone ranch` the bright cluster above puts forward four patches and
+loses three of them here — one on wall contact (10.6 % of the region but only
+8.5 % of its outline against a wall: that is the white counter run) and two on
+size (3.0 % and 5.3 %). The sofa cluster is rejected outright at 1.7 % wall
+contact.
+
+Only the two largest surviving finishes are kept (`max_zones=2`), which
+removes the bright cluster's last patch: with 10.1 % of the region it comes
+third behind the shaded floor (24.6 %) and the plank floor (16.1 %). The third
+cluster, on all three renders, is a lighting artefact or a furniture group:
+with the cap lifted (`--max-zones 4`) `limestone ranch` comes back as three
+zones, 51 % / 24 % / 26 %, the extra boundary running along the edge of the
+sunlit strip.
 
 ### 3.4 Grow the seeds
 
@@ -158,20 +181,22 @@ Without them the method is unusable. Run with the guards disabled
 (`--min-region-frac 0.12 --max-cut-ratio 99`), every region above 12 % of the
 plan gets cut:
 
-| Render | Region | Share of plan | Proposed zones | Cut ratio | Verdict at defaults |
-|---|---|---|---|---|---|
-| limestone ranch | #3 | 31 % | 74 / 26 | **0.22** | split — kitchen plank vs living floor |
-| limestone ranch | #4 | 20 % | 54 / 44 | 2.06 | rejected by the cut-shape guard — bedroom, cut wraps the bed |
-| highlandlux | #2 | 32 % | 67 / 33 | **1.53** | split — living/dining vs kitchen tile |
-| highlandlux | #7 | 15 % | 69 / 31 | 1.63 | rejected by the size guard — bedroom |
-| heritage towers | #3 | 13 % | 38 / 62 | 1.02 | rejected by the size guard |
-| heritage towers | #6 | 38 % | 43 / 56 | 3.04 | rejected by the cut-shape guard — one plank floor, cut wraps the furniture |
+| Render | Region | Share of plan | Proposed zones | Cut ratio | What it is | Verdict at defaults |
+|---|---|---|---|---|---|---|
+| limestone ranch | #3 | 31 % | 74 / 26 | **0.22** | open plan | **split** |
+| limestone ranch | #4 | 20 % | 54 / 44 | 2.06 | bedroom | size guard (cut guard would also reject) |
+| highlandlux | #2 | 32 % | 67 / 33 | **1.53** | open plan | **split** |
+| highlandlux | #7 | 15 % | 69 / 31 | 1.63 | bedroom | size guard only |
+| heritage towers | #3 | 13 % | 38 / 62 | 1.02 | bedroom | size guard only |
+| heritage towers | #6 | 38 % | 43 / 56 | 3.04 | open plan, one material | **cut-shape guard** |
 
 **The size guard** (`min_region_frac = 0.22`). On these renders every genuine
 open-plan area covers 31–38 % of the footprint and the largest single room
 stops at 20 %, so the threshold sits between the two populations. It is fitted
 on three images and the 20 % bedroom is uncomfortably close to the line — which
-is why the second guard matters.
+is why the second guard matters. A region below the threshold is never
+inspected at all, so the cut ratios in the table for those rows come from the
+relaxed run, not from the default one.
 
 **The cut-shape guard** (`max_cut_ratio = 1.8`). Measure the length of the
 proposed cut in units of `sqrt(region area)`
@@ -186,9 +211,12 @@ blue is rug + sofa + kitchen counters. There is only one flooring material in
 this region, so the strongest appearance boundary available is the furniture,
 and the cut wraps it — ratio 3.04, rejected.*
 
-Note what each guard catches: neither is sufficient alone. The size guard
-rejects the two bedrooms whose cut looks respectable (1.63, 1.02); the
-cut-shape guard rejects the two large regions that pass on size (2.06, 3.04).
+Neither guard is sufficient alone. Two bedrooms produce a cut that looks
+perfectly respectable (1.63 and 1.02) and only the size guard stops them; the
+38 % region on `heritage towers` passes the size guard comfortably and only the
+cut shape gives it away. Both are needed, and both were fitted on six
+candidate regions — with margins of 0.02 in share of plan and 0.26 in cut
+ratio, which is thin.
 
 ## 5. Applied to the three renders
 
@@ -235,7 +263,43 @@ rejected proposal is the figure in [§4](#4-the-two-guards).
 This is the case where the vision-language stage is genuinely irreplaceable:
 only knowing that a hob means kitchen can divide this space.
 
-## 6. Against the committed vision-language run
+## 6. How much of this is the features? An ablation
+
+The appearance vector of [§3.2](#32-describe-each-superpixel) was designed
+first and justified by an argument about illumination. Turning its channels off
+one at a time says something less flattering:
+
+| Configuration | limestone ranch | highlandlux | heritage towers |
+|---|---|---|---|
+| **default** (damped `L` + chroma + contrast + coherence) | split 74/26, cut 0.22 | split 67/33, cut 1.53 | declined, cut 3.04 |
+| colour only, damped `L` | split 56/44, cut 1.13 | **declined**, cut 2.92 | declined, cut 3.19 |
+| colour only, full `L` | split 74/26, cut 0.22 | split 67/33, **cut 1.25** | declined, cut 3.19 |
+| texture only (no `L`, no chroma) | **declined**: fewer than two wall-bound finishes | **declined**: finishes too similar | declined |
+| default, cap lifted (`--max-zones 4`) | **3 zones** 51/24/26 | split 67/33 | declined |
+
+Reproduce any row with the flags shown in [§10](#10-regenerating-the-assets).
+
+Read honestly:
+
+- **Plain CIELAB with full lightness weight does everything the designed
+  vector does** — same two splits, same cut on `limestone ranch`, a slightly
+  *shorter* cut on `highlandlux`. On this data the texture channels buy
+  nothing.
+- **Damping lightness only works because the texture channels compensate for
+  it.** Turn them off and keep the damping and the method loses `highlandlux`.
+  The pair is self-consistent; neither half is independently justified here.
+- **Texture alone is useless**: the finishes stop being separable at all.
+- **What actually suppresses the lighting artefact is `max_zones = 2`**, not
+  the features. With the cap lifted the sunlit strip becomes its own zone
+  regardless of which feature set is used.
+
+The default is left as it is — the illumination-invariance argument is sound,
+the richer vector is not worse anywhere, and three renders cannot settle it —
+but the honest summary is that the two guards and the two-zone cap carry this
+method, and a plain Lab clustering would serve equally well until a render
+appears where a sunlit strip outgrows the second material.
+
+## 7. Against the committed vision-language run
 
 `output/semantic/*.json` holds a GPT-4o run of the same three images, so the
 two approaches can be compared on the same regions. Shares are of the total
@@ -265,7 +329,7 @@ What the model gives that this cannot: names. This approach produces two
 anonymous zones. A plausible combination is to use the finish boundary as the
 geometry and the model — or a small furniture detector — only for the labels.
 
-## 7. What improved, what got worse
+## 8. What improved, what got worse
 
 **Improved**
 
@@ -290,13 +354,18 @@ geometry and the model — or a small furniture detector — only for the labels
   between them.
 - **A bright floor can pass for tile** (the bottom strip on `highlandlux`),
   so the zone boundary is ragged where the lighting is strong.
+- **The appearance features are not earning their place.** Plain CIELAB
+  produces the same two splits ([§6](#6-how-much-of-this-is-the-features-an-ablation)),
+  so the extra two channels are cost without demonstrated benefit on this
+  data, and the lighting robustness the method actually relies on comes from
+  the two-zone cap.
 - It costs 0.4–1.0 s per image on top of the baseline's 0.2–0.6 s, which is
   2–3× the geometric pipeline, almost all of it in SLIC and in the per
   superpixel statistics.
 - Zones are unnamed, and the id numbering of the whole plan shifts when a
   region is split — the same caveat the semantic stage carries.
 
-## 8. Limitations
+## 9. Limitations
 
 - Three renders, six candidate regions, no ground truth. Every number here is
   an observation, not a measurement against an annotation.
@@ -322,7 +391,7 @@ geometry and the model — or a small furniture detector — only for the labels
    guards fire, which is the only way to know whether 0.22 and 1.8 mean
    anything outside these three images.
 
-## 9. Regenerating the assets
+## 10. Regenerating the assets
 
 ```bash
 uv sync                                                      # once
@@ -332,6 +401,15 @@ uv run python research/superpixel-finish-split/run.py --image limestone
 # the guard inventory in section 4
 uv run python research/superpixel-finish-split/run.py \
     --min-region-frac 0.12 --max-cut-ratio 99 --no-assets
+
+# the ablation rows in section 6
+uv run python research/superpixel-finish-split/run.py --no-assets \
+    --contrast-weight 0 --coherence-weight 0                       # colour only, damped L
+uv run python research/superpixel-finish-split/run.py --no-assets \
+    --lightness-weight 1 --contrast-weight 0 --coherence-weight 0  # colour only, full L
+uv run python research/superpixel-finish-split/run.py --no-assets \
+    --lightness-weight 0 --chroma-weight 0                         # texture only
+uv run python research/superpixel-finish-split/run.py --no-assets --max-zones 4
 ```
 
 Every figure in this document and `assets/metrics.json` come from the first

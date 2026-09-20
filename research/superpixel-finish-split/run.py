@@ -166,6 +166,17 @@ def main(argv: list[str] | None = None) -> int:
                         help="cut-shape guard (default %(default)s)")
     parser.add_argument("--max-zones", type=int, default=defaults.max_zones,
                         help="finishes a region may be cut into (default %(default)s)")
+    ablation = parser.add_argument_group("feature ablation (see ALGORITHM.md)")
+    ablation.add_argument("--lightness-weight", type=float, default=defaults.lightness_weight,
+                          help="weight of median L (default %(default)s)")
+    ablation.add_argument("--chroma-weight", type=float, default=defaults.chroma_weight,
+                          help="weight of median a/b (default %(default)s)")
+    ablation.add_argument("--contrast-weight", type=float, default=defaults.contrast_weight,
+                          help="weight of the illumination-normalised contrast "
+                               "(0 disables it, default %(default)s)")
+    ablation.add_argument("--coherence-weight", type=float, default=defaults.coherence_weight,
+                          help="weight of the orientation coherence (0 disables it, "
+                               "default %(default)s)")
     parser.add_argument("--no-assets", action="store_true",
                         help="only print the table; do not write assets")
     args = parser.parse_args(argv)
@@ -181,6 +192,10 @@ def main(argv: list[str] | None = None) -> int:
         min_region_frac=args.min_region_frac,
         max_cut_ratio=args.max_cut_ratio,
         max_zones=args.max_zones,
+        lightness_weight=args.lightness_weight,
+        chroma_weight=args.chroma_weight,
+        contrast_weight=args.contrast_weight,
+        coherence_weight=args.coherence_weight,
     )
     results = [process(path, cfg, write_assets=not args.no_assets) for path in images]
     if not args.no_assets:
@@ -204,7 +219,8 @@ def main(argv: list[str] | None = None) -> int:
         for r in results
     ]
     print(common.markdown_table(rows, ["render", "baseline", "approach", "decisions", "agreement"]))
-    print(f"\nassets -> {ASSETS}")
+    if not args.no_assets:
+        print(f"\nassets -> {ASSETS}")
     return 0
 
 

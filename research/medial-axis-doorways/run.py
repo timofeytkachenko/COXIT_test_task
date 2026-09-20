@@ -269,7 +269,8 @@ def main(argv: list[str] | None = None) -> int:
         for r in results
     ]
     print(common.markdown_table(rows, list(rows[0])))
-    print(f"\nassets -> {ASSETS}")
+    if not args.no_assets:
+        print(f"\nassets -> {ASSETS}")
     return 0
 
 
