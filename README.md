@@ -52,7 +52,10 @@ docker compose run --rm segment --help
 
 `./data` is mounted read-only, `./output` is mounted for results. The container runs as
 uid 1000, so results are not root-owned; if your user has a different uid, run
-`HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run …` (or put both in `.env`). The `segment-semantic`
+`HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run …` (or put both in `.env`). The
+entrypoint calls the venv interpreter directly (no `uv run` at runtime), and the build-time
+uv cache is removed from the image — rebuild with `docker compose build` after pulling if
+you have an image from before this change. The `segment-semantic`
 service is the same image plus `.env`, and its entrypoint already carries `--semantics`
 and `--output-dir output/semantic`, so geometric and named results never overwrite
 each other.

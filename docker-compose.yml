@@ -32,6 +32,6 @@ services:
     volumes:
       - ./data:/app/data:ro
       - ./output:/app/output
-    entrypoint: ["uv", "run", "--no-sync", "python", "-m", "floorplan_seg",
+    entrypoint: ["python", "-m", "floorplan_seg",
                  "--semantics", "--output-dir", "output/semantic"]
     command: ["data/limestone ranch_santa fe_625sq.webp"]
