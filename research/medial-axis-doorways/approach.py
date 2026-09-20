@@ -76,6 +76,10 @@ class RidgeCutConfig:
         room. They appear where a passage is long and slightly bulged.
     min_core_px
         Same, for the ``"cores"`` variant, in pixels of area.
+    min_orphan_frac
+        A free-space component that holds no marker gets one of its own when
+        it covers at least this share of the plan, so its area is not dropped;
+        see :func:`_seed_unmarked_components`.
     rng_seed
         Seed for ``skimage.morphology.medial_axis``, which breaks ties between
         equidistant pixels at random. Left to the default the skeleton - and
@@ -90,6 +94,7 @@ class RidgeCutConfig:
     marker_source: str = "ridge"
     min_ridge_px: int = 25
     min_core_px: int = 25
+    min_orphan_frac: float = 0.0005
     rng_seed: int = 0
     merge_width: float = 16.0
     min_region_area_frac: float = 0.004
@@ -163,7 +168,9 @@ def core_markers(
     return markers.astype(np.int32), cores
 
 
-def _seed_unmarked_components(free: BoolMask, markers: LabelMap) -> LabelMap:
+def _seed_unmarked_components(
+    free: BoolMask, markers: LabelMap, min_px: float
+) -> LabelMap:
     """Give every free-space component without a marker one of its own.
 
     A component that is narrower than a passage everywhere - a niche, a
@@ -173,12 +180,20 @@ def _seed_unmarked_components(free: BoolMask, markers: LabelMap) -> LabelMap:
     was 2.7 % of the plan. Those components get a marker here and the
     production small-region absorption decides afterwards whether they are
     rooms of their own or belong to a neighbour.
+
+    Components below ``min_px`` are left out: they are antialiasing crumbs
+    along the barrier, they carry 0.2-0.3 % of the free space between them,
+    and each one costs a full pass of the absorption loop.
     """
     components, n = ndi.label(free, structure=np.ones((3, 3), int))
     if n == 0:
         return markers
+    sizes = np.bincount(components.ravel(), minlength=n + 1)
     marked = set(np.unique(components[markers > 0]).tolist()) - {0}
-    orphans = np.isin(components, [c for c in range(1, n + 1) if c not in marked])
+    orphans = np.isin(
+        components,
+        [c for c in range(1, n + 1) if c not in marked and sizes[c] >= min_px],
+    )
     if not orphans.any():
         return markers
     extra, _ = ndi.label(orphans, structure=np.ones((3, 3), int))
@@ -234,7 +249,9 @@ def region_labels(
         markers, marker_mask = core_markers(distance, half_width, cfg.min_core_px)
         ridge = skeleton = np.zeros(free.shape, bool)
     passage_markers = int(markers.max())
-    markers = _seed_unmarked_components(free, markers)
+    markers = _seed_unmarked_components(
+        free, markers, cfg.min_orphan_frac * float(plan.sum())
+    )
     if markers.max() == 0:  # degenerate plan: keep the free space as one room
         markers = free.astype(np.int32)
 

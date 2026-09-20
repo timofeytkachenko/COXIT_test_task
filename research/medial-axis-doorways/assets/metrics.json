@@ -5,6 +5,7 @@
     "marker_source": "ridge",
     "min_ridge_px": 25,
     "min_core_px": 25,
+    "min_orphan_frac": 0.0005,
     "rng_seed": 0,
     "merge_width": 16.0,
     "min_region_area_frac": 0.004
@@ -17,10 +18,10 @@
       "wall_thickness_px": 20.0,
       "passage_half_width_px": 10.0,
       "passage_markers": 13,
-      "markers": 52,
-      "free_space_covered": 1.0,
+      "markers": 17,
+      "free_space_covered": 0.9973,
       "baseline_free_space_covered": 0.992,
-      "regions_before_postprocess": 52,
+      "regions_before_postprocess": 17,
       "baseline_regions": 9,
       "approach_regions": 8,
       "baseline_cuts": {
@@ -35,7 +36,7 @@
       },
       "agreement_vs_baseline": {
         "pixel_agreement": 0.9998,
-        "mean_iou": 0.9742
+        "mean_iou": 0.9767
       },
       "passages": [
         {
@@ -107,33 +108,33 @@
       "approach_rooms": [
         {
           "id": 2,
-          "area_px": 165012,
-          "relative_area": 0.5425,
-          "share_of_plan": 0.3879
+          "area_px": 164630,
+          "relative_area": 0.5426,
+          "share_of_plan": 0.387
         },
         {
           "id": 3,
-          "area_px": 56722,
-          "relative_area": 0.1865,
+          "area_px": 56720,
+          "relative_area": 0.187,
           "share_of_plan": 0.1333
         },
         {
           "id": 6,
           "area_px": 37094,
-          "relative_area": 0.1219,
+          "relative_area": 0.1223,
           "share_of_plan": 0.0872
         },
         {
           "id": 7,
           "area_px": 20826,
-          "relative_area": 0.0685,
+          "relative_area": 0.0686,
           "share_of_plan": 0.049
         },
         {
           "id": 1,
-          "area_px": 13350,
-          "relative_area": 0.0439,
-          "share_of_plan": 0.0314
+          "area_px": 13106,
+          "relative_area": 0.0432,
+          "share_of_plan": 0.0308
         },
         {
           "id": 4,
@@ -143,14 +144,14 @@
         },
         {
           "id": 5,
-          "area_px": 2911,
-          "relative_area": 0.0096,
-          "share_of_plan": 0.0068
+          "area_px": 2725,
+          "relative_area": 0.009,
+          "share_of_plan": 0.0064
         },
         {
           "id": 8,
           "area_px": 2506,
-          "relative_area": 0.0082,
+          "relative_area": 0.0083,
           "share_of_plan": 0.0059
         }
       ],
@@ -216,10 +217,10 @@
       "wall_thickness_px": 32.0,
       "passage_half_width_px": 16.0,
       "passage_markers": 7,
-      "markers": 33,
-      "free_space_covered": 0.9946,
+      "markers": 15,
+      "free_space_covered": 0.993,
       "baseline_free_space_covered": 0.9747,
-      "regions_before_postprocess": 33,
+      "regions_before_postprocess": 15,
       "baseline_regions": 10,
       "approach_regions": 12,
       "baseline_cuts": {
@@ -234,7 +235,7 @@
       },
       "agreement_vs_baseline": {
         "pixel_agreement": 0.9813,
-        "mean_iou": 0.9684
+        "mean_iou": 0.97
       },
       "passages": [
         {
@@ -321,31 +322,31 @@
       "approach_rooms": [
         {
           "id": 1,
-          "area_px": 105208,
-          "relative_area": 0.496,
-          "share_of_plan": 0.3271
+          "area_px": 105139,
+          "relative_area": 0.4964,
+          "share_of_plan": 0.3269
         },
         {
           "id": 5,
           "area_px": 47891,
-          "relative_area": 0.2258,
+          "relative_area": 0.2261,
           "share_of_plan": 0.1489
         },
         {
           "id": 7,
-          "area_px": 22499,
-          "relative_area": 0.1061,
-          "share_of_plan": 0.07
+          "area_px": 22391,
+          "relative_area": 0.1057,
+          "share_of_plan": 0.0696
         },
         {
           "id": 2,
-          "area_px": 14919,
-          "relative_area": 0.0703,
-          "share_of_plan": 0.0464
+          "area_px": 14768,
+          "relative_area": 0.0697,
+          "share_of_plan": 0.0459
         },
         {
           "id": 3,
-          "area_px": 4678,
+          "area_px": 4671,
           "relative_area": 0.0221,
           "share_of_plan": 0.0145
         },
@@ -455,10 +456,10 @@
       "wall_thickness_px": 24.0,
       "passage_half_width_px": 12.0,
       "passage_markers": 10,
-      "markers": 17,
-      "free_space_covered": 1.0,
+      "markers": 11,
+      "free_space_covered": 0.9987,
       "baseline_free_space_covered": 0.9976,
-      "regions_before_postprocess": 17,
+      "regions_before_postprocess": 11,
       "baseline_regions": 9,
       "approach_regions": 9,
       "baseline_cuts": {
@@ -473,7 +474,7 @@
       },
       "agreement_vs_baseline": {
         "pixel_agreement": 1.0,
-        "mean_iou": 0.9976
+        "mean_iou": 0.9989
       },
       "passages": [],
       "baseline_rooms": [
@@ -535,32 +536,32 @@
       "approach_rooms": [
         {
           "id": 4,
-          "area_px": 130113,
-          "relative_area": 0.4228,
-          "share_of_plan": 0.3122
+          "area_px": 129978,
+          "relative_area": 0.4229,
+          "share_of_plan": 0.3119
         },
         {
           "id": 3,
-          "area_px": 81446,
-          "relative_area": 0.2647,
-          "share_of_plan": 0.1954
+          "area_px": 81189,
+          "relative_area": 0.2642,
+          "share_of_plan": 0.1948
         },
         {
           "id": 9,
           "area_px": 37097,
-          "relative_area": 0.1205,
+          "relative_area": 0.1207,
           "share_of_plan": 0.089
         },
         {
           "id": 5,
           "area_px": 22314,
-          "relative_area": 0.0725,
+          "relative_area": 0.0726,
           "share_of_plan": 0.0535
         },
         {
           "id": 8,
           "area_px": 12320,
-          "relative_area": 0.04,
+          "relative_area": 0.0401,
           "share_of_plan": 0.0296
         },
         {

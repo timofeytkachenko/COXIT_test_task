@@ -55,8 +55,8 @@ def _seed_figure(image, seeds, report, region):
         accepted = [r for r in report if r["finish"] == lbl and r["accepted"]]
         share = sum(r["area_frac"] for r in accepted)
         contact = max((r["wall_contact"] for r in accepted), default=0.0)
-        tags[lbl] = f"finish {lbl}: {share:.0%} of region, wall {contact:.0%}"
-    return common.overlay(out, seeds, colours, tags, alpha=0.5, font_scale=0.5)
+        tags[lbl] = f"finish {lbl} | {share:.0%} | wall {contact:.0%}"
+    return common.overlay(out, seeds, colours, tags, alpha=0.5, font_scale=0.45)
 
 
 def _semantic_reference(path: Path) -> list[dict] | None:
@@ -121,7 +121,7 @@ def process(path: Path, cfg: FinishSplitConfig, write_assets: bool = True) -> di
             ),
             _seed_figure(seg.image, dbg["seeds"], seed_report, region),
         ]
-        crops = common.crop_to(region, *figures, pad=24)
+        crops = common.crop_to(region, *figures, pad=60)
         common.save(crops[0], ASSETS / f"{name}-06-superpixels.webp")
         common.save(crops[1], ASSETS / f"{name}-07-finish-clusters.webp")
         common.save(crops[2], ASSETS / f"{name}-08-finish-seeds.webp")
