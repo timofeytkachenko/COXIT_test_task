@@ -5,7 +5,7 @@
     "height": 855
   },
   "plan_area_px": 425405,
-  "rooms_area_px": 300631,
+  "rooms_area_px": 301757,
   "advertised_total_sqft": 593.0,
   "units": {
     "polygon": "pixel coordinates, origin top-left, x right, y down",
@@ -16,13 +16,13 @@
     {
       "id": 6,
       "name": null,
-      "area_px": 159811,
-      "relative_area": 0.5316,
-      "share_of_plan": 0.3757,
-      "area_sqft_estimate": 315.2,
+      "area_px": 160936,
+      "relative_area": 0.5333,
+      "share_of_plan": 0.3783,
+      "area_sqft_estimate": 316.3,
       "centroid": [
-        423,
-        420
+        424,
+        418
       ],
       "polygon": [
         [
@@ -119,9 +119,9 @@
       "id": 3,
       "name": null,
       "area_px": 56720,
-      "relative_area": 0.1887,
+      "relative_area": 0.188,
       "share_of_plan": 0.1333,
-      "area_sqft_estimate": 111.9,
+      "area_sqft_estimate": 111.5,
       "centroid": [
         733,
         299
@@ -177,9 +177,9 @@
       "id": 7,
       "name": null,
       "area_px": 37094,
-      "relative_area": 0.1234,
+      "relative_area": 0.1229,
       "share_of_plan": 0.0872,
-      "area_sqft_estimate": 73.2,
+      "area_sqft_estimate": 72.9,
       "centroid": [
         825,
         560
@@ -243,9 +243,9 @@
       "id": 8,
       "name": null,
       "area_px": 20383,
-      "relative_area": 0.0678,
+      "relative_area": 0.0675,
       "share_of_plan": 0.0479,
-      "area_sqft_estimate": 40.2,
+      "area_sqft_estimate": 40.1,
       "centroid": [
         683,
         557
@@ -329,9 +329,9 @@
       "id": 2,
       "name": null,
       "area_px": 12848,
-      "relative_area": 0.0427,
+      "relative_area": 0.0426,
       "share_of_plan": 0.0302,
-      "area_sqft_estimate": 25.3,
+      "area_sqft_estimate": 25.2,
       "centroid": [
         748,
         119
@@ -387,7 +387,7 @@
       "id": 4,
       "name": null,
       "area_px": 5776,
-      "relative_area": 0.0192,
+      "relative_area": 0.0191,
       "share_of_plan": 0.0136,
       "area_sqft_estimate": 11.4,
       "centroid": [
@@ -417,7 +417,7 @@
       "id": 5,
       "name": null,
       "area_px": 2725,
-      "relative_area": 0.0091,
+      "relative_area": 0.009,
       "share_of_plan": 0.0064,
       "area_sqft_estimate": 5.4,
       "centroid": [
@@ -458,8 +458,8 @@
     {
       "id": 1,
       "name": null,
-      "area_px": 2696,
-      "relative_area": 0.009,
+      "area_px": 2697,
+      "relative_area": 0.0089,
       "share_of_plan": 0.0063,
       "area_sqft_estimate": 5.3,
       "centroid": [
@@ -537,7 +537,7 @@
       "id": 9,
       "name": null,
       "area_px": 2578,
-      "relative_area": 0.0086,
+      "relative_area": 0.0085,
       "share_of_plan": 0.0061,
       "area_sqft_estimate": 5.1,
       "centroid": [
