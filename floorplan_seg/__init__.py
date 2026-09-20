@@ -6,7 +6,13 @@ from .config import (
     SeedConfig,
     SemanticsConfig,
 )
-from .pipeline import Room, Segmentation, parse_total_sqft, segment_floorplan
+from .pipeline import (
+    Room,
+    Segmentation,
+    label_rooms,
+    parse_total_sqft,
+    segment_floorplan,
+)
 from .semantics import SemanticsError
 from .viz import overlay_labels
 
@@ -18,6 +24,7 @@ __all__ = [
     "Segmentation",
     "SemanticsConfig",
     "SemanticsError",
+    "label_rooms",
     "overlay_labels",
     "parse_total_sqft",
     "segment_floorplan",

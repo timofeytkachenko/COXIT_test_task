@@ -5,8 +5,7 @@ showing the result after every operation — not after every stage, but after ev
 transformation. All the numbers in the text were measured on this exact file.
 
 A description of the algorithm without a specific image is in
-[ALGORITHM.md](ALGORITHM.md). The same walkthrough as executable cells is in
-[`debug.ipynb`](debug.ipynb). Russian version: [EXAMPLE_RU.md](EXAMPLE_RU.md).
+[ALGORITHM.md](ALGORITHM.md).
 
 **Source file:** `data/heritage towers_a1_1 Bed 1 Bath 593 Sq. Ft..webp`,
 1140 × 855 pixels.
@@ -15,7 +14,7 @@ A description of the algorithm without a specific image is in
 
 > **Why this plan.** It is the only one of the three that exercises every step:
 > the watershed genuinely splits rooms on it, the merge fires, small regions get
-> absorbed, and an isolated scrap gets deleted. For comparison, on
+> absorbed, and an isolated scrap gets attached to the nearest room. For comparison, on
 > `limestone ranch` steps 6–8 together produce the same result as plain
 > connectivity of the free space (see
 > [the closing summary](#what-this-example-revealed-about-the-algorithm)). A
@@ -140,7 +139,9 @@ robust to such outliers.
 ### Operation 3.1 — distance to the wall colour
 
 For every pixel we compute the Euclidean distance in Lab to the colour we found
-(the "delta E"). Bright on the map below means close to the wall colour:
+(the "delta E" — in OpenCV's 8-bit Lab encoding, where `L` runs 0–255, so 18
+here is roughly 7 CIELAB L\* units rather than a CIE ΔE\*ab). Bright on the map
+below means close to the wall colour:
 
 ![delta E map](docs/img/example/10_delta.png)
 
@@ -187,7 +188,8 @@ does not look like a wall by shape.
 ### Operation 3.4 — dilating into the barrier
 
 A wall in the render is three-dimensional: colour only finds its bright top face,
-while the dark side face stays "floor". We dilate the mask by 3 pixels.
+while the dark side face stays "floor". We dilate the mask with a 3×3 kernel,
+i.e. by one pixel on each side.
 
 Green marks the walls found by colour, red marks what the dilation added:
 
@@ -303,10 +305,12 @@ smallest region and decide its fate.
 1. Region 3, **1,589 px**. It has a neighbour — region 8 (8 px of shared
    boundary). Attached to it.
 2. Region 4, **1,126 px**. No neighbours at all — an isolated islet cut off by
-   the barrier on every side. **Deleted** (marked as background).
+   the barrier on every side. **Attached to the nearest full-sized region**
+   (Euclidean distance), which is the open-plan region 6.
 
-The second case is worth understanding: such a region is not absorbed but simply
-disappears, and its area ends up in no room at all.
+The second case is worth understanding: an earlier version simply deleted such
+an islet, and its 1,126 px ended up in no room at all — the shares of every
+other room were then computed against a total that was silently too small.
 
 After consecutive renumbering:
 
@@ -321,7 +325,7 @@ Summary of steps 5–8:
 | markers (h-maxima instead of peaks) | 85 peaks | 12 markers |
 | watershed | 12 markers | 12 regions |
 | merging wide contacts | 12 | 11 |
-| absorption + deletion | 11 | **9** |
+| absorption (one scrap into its neighbour, one islet into the nearest room) | 11 | **9** |
 
 ---
 
@@ -343,21 +347,25 @@ Across all rooms:
 
 | id | Area, px | Share | Estimate, sq ft | Contour points | Vertices after simplification |
 |---|---|---|---|---|---|
-| 6 | 159,810 | 53.2 % | 315.2 | 417 | 22 |
-| 3 | 56,720 | 18.9 % | 111.9 | 175 | 11 |
-| 7 | 37,094 | 12.3 % | 73.2 | 141 | 13 |
-| 8 | 20,383 | 6.8 % | 40.2 | 98 | 18 |
-| 2 | 12,848 | 4.3 % | 25.3 | 109 | 11 |
+| 6 | 160,936 | 53.3 % | 316.3 | 417 | 22 |
+| 3 | 56,720 | 18.8 % | 111.5 | 175 | 11 |
+| 7 | 37,094 | 12.3 % | 72.9 | 141 | 13 |
+| 8 | 20,383 | 6.8 % | 40.1 | 98 | 18 |
+| 2 | 12,848 | 4.3 % | 25.2 | 109 | 11 |
 | 4 | 5,776 | 1.9 % | 11.4 | 27 | 4 |
 | 5 | 2,725 | 0.9 % | 5.4 | 34 | 7 |
 | 1 | 2,697 | 0.9 % | 5.3 | 27 | 16 |
 | 9 | 2,578 | 0.9 % | 5.1 | 117 | 20 |
 
+Region 6 includes the 1,126 px islet from step 8; it is a separate blob inside
+the room, so the outer contour and its vertex count are unaffected.
+
 Contour compression ranges from 4× to 19×.
 
 ### Operation 9.2 — areas
 
-The total room area is **300,631 px**. The relative area of each room is its
+The total room area is **301,757 px** — every free-space pixel that survived
+step 8 is in exactly one room. The relative area of each room is its
 share of that total, which is why the shares sum to exactly 1.0.
 
 The file name carries `593 Sq. Ft.`, so we additionally convert to square feet:
@@ -422,6 +430,10 @@ measured inside the region.
 **Result:** region 6 (159,810 px) split into dining room 90,662, kitchen 39,320
 and living room 29,828 px.
 
+> The model run shown in this step predates the islet change in step 8, which
+> is why its zones sum to 159,810 px rather than the 160,936 px above; the
+> shares and square-foot figures in the two tables below inherit that total.
+
 ### Operation 10.4 — the outcome
 
 ![final result](docs/img/example/29_final.png)
@@ -459,10 +471,10 @@ nowhere else:
 
 | Room | Printed | In sq ft | Our estimate | Difference |
 |---|---|---|---|---|
-| bedroom | `11'9" x 10'9"` | 126.3 | 111.9 | **−11.4 %** |
+| bedroom | `11'9" x 10'9"` | 126.3 | 111.5 | **−11.7 %** |
 
 The shortfall is expected and systematic: the room boundary follows the **visible
-floor** rather than the wall centreline, and the barrier eats another 3 pixels
+floor** rather than the wall centreline, and the barrier eats another pixel
 around the perimeter. The printed dimension is measured between wall axes.
 
 ### What came out wrong
@@ -475,8 +487,6 @@ An honest breakdown of the errors on this run:
   and became the largest room, although visually the dining area is smaller than
   the living room. The cause is the round, estimated anchor coordinates and the
   straight Voronoi lines.
-- **One area was lost.** A region of 1,126 px was deleted at step 8 as isolated,
-  and its area ended up in no room.
 - **The result is unstable between runs.** At `temperature=0` repeated calls
   still disagree: another run on the same file split it as `living room` 142.4 /
   `dining room` 104.1 / `kitchen` 68.7 sq ft instead of 58.8 / 178.8 / 77.6.
@@ -492,7 +502,7 @@ Three conclusions that only become visible on concrete numbers.
 
 **1. The barrier, not the watershed, does most of the work of separating rooms.**
 The free space broke into 47 components before the watershed even ran, and 9 of
-them were large. Dilating the walls by 3 pixels closes the door frames, and the
+them were large. Dilating the walls by one pixel on each side closes the door frames, and the
 rooms end up separated automatically. The watershed split only 2 components out
 of 47. On `limestone ranch` it split none at all — there the result coincides with
 plain connectivity of the free space.

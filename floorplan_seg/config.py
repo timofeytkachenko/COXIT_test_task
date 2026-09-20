@@ -18,7 +18,10 @@ class PreprocessConfig:
         Erosion depths (px) delimiting the ring just inside the plan outline.
         The ring is assumed to be wall and provides the per-image wall colour.
     wall_delta_e
-        CIELAB distance below which a pixel is considered wall-coloured.
+        Euclidean distance to the wall colour below which a pixel is
+        considered wall-coloured, measured in OpenCV's 8-bit Lab encoding
+        (L scaled to 0-255, a and b offset by 128). Along L one unit is
+        1/2.55 of a CIELAB L* unit, so this is not a CIE Delta E.
     wall_min_component_frac
         Wall-coloured blobs smaller than this fraction of the largest such blob
         are discarded unless they are elongated. The full wall network is
@@ -28,8 +31,10 @@ class PreprocessConfig:
         Aspect ratio of the minimum-area rectangle above which a small blob is
         kept anyway, so that short isolated wall stubs survive.
     wall_dilate
-        Dilation (px) applied to the wall skeleton so that the shaded vertical
-        face of a wall, which is not wall-coloured, still acts as a barrier.
+        Side (px) of the square kernel that dilates the wall skeleton so that
+        the shaded vertical face of a wall, which is not wall-coloured, still
+        acts as a barrier. A 3x3 kernel adds a one-pixel rim on each side;
+        0 or 1 disables the dilation.
     """
 
     bg_flood_tol: int = 6
@@ -80,8 +85,9 @@ class SemanticsConfig:
     Attributes
     ----------
     enabled
-        When ``False`` the pipeline returns geometric regions without labels
-        and without splitting open-plan areas.
+        When ``False`` (the default) the pipeline returns geometric regions
+        without labels and without splitting open-plan areas. Enabling it
+        makes a network call to the OpenAI API and needs ``OPENAI_API_KEY``.
     model
         Chat-completions model identifier.
     api_key_env
@@ -98,7 +104,7 @@ class SemanticsConfig:
         Per-request timeout in seconds.
     """
 
-    enabled: bool = True
+    enabled: bool = False
     model: str = "gpt-4o"
     api_key_env: str = "OPENAI_API_KEY"
     max_image_side: int = 1280

@@ -224,7 +224,10 @@ def split_region_by_zones(
     sub : numpy.ndarray
         Label map over ``region``, numbered 1..k, 0 elsewhere.
     names : list of str
-        Zone name for each label, in order.
+        Zone name for each label, in order. Fewer than two names means the
+        anchors collapsed onto one pixel and no split was possible; ``sub``
+        is then the whole region as label 1 and the caller should keep the
+        region-level name.
     """
     markers = np.zeros(region.shape, np.int32)
     names: list[str] = []
@@ -239,7 +242,7 @@ def split_region_by_zones(
         markers[y, x] = len(names)
 
     if len(names) < 2:
-        return np.where(region, 1, 0).astype(np.int32), names[:1] or ["room"]
+        return np.where(region, 1, 0).astype(np.int32), names
 
     flat = np.zeros(region.shape, np.float32)
     sub = watershed(flat, markers, mask=region).astype(np.int32)
@@ -284,8 +287,10 @@ def apply_labels(
         info = by_id.get(rid)
         zones = info.zones if (info and cfg.split_open_plan) else []
 
-        if len(zones) >= 2:
-            sub, zone_names = split_region_by_zones(region, zones)
+        sub, zone_names = (
+            split_region_by_zones(region, zones) if len(zones) >= 2 else (None, [])
+        )
+        if sub is not None and len(zone_names) >= 2:
             for local, name in enumerate(zone_names, start=1):
                 piece = sub == local
                 if not piece.any():

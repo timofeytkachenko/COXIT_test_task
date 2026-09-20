@@ -15,8 +15,11 @@ from .viz import label_colours, overlay_labels
 
 Polygon = list[list[int]]
 
+#: Douglas-Peucker tolerance as a fraction of the contour perimeter.
+DEFAULT_SIMPLIFY = 0.004
 
-def room_polygon(mask: NDArray[np.bool_], simplify: float = 0.004) -> Polygon:
+
+def room_polygon(mask: NDArray[np.bool_], simplify: float = DEFAULT_SIMPLIFY) -> Polygon:
     """Approximate the outer boundary of a room mask with a polygon.
 
     Only the largest external contour is kept, so holes left by furniture or
@@ -49,7 +52,7 @@ def room_polygon(mask: NDArray[np.bool_], simplify: float = 0.004) -> Polygon:
     return contour.reshape(-1, 2).astype(int).tolist()
 
 
-def to_record(seg: Segmentation, simplify: float = 0.004) -> dict[str, Any]:
+def to_record(seg: Segmentation, simplify: float = DEFAULT_SIMPLIFY) -> dict[str, Any]:
     """Serialise a segmentation into a JSON-ready dictionary.
 
     Relative areas are pixel based: ``relative_area`` is the room's share of

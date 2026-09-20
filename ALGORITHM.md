@@ -3,12 +3,11 @@
 This document walks through the pipeline step by step: what each stage does, why
 it is built that way, what its parameters are and where it lives in the code. A
 short overview is in [README.md](README.md); this is the same thing with the
-implementation details. Russian version: [ALGORITHM_RU.md](ALGORITHM_RU.md).
+implementation details.
 
 A worked example on one concrete image, with a picture after every single
-operation, is in [EXAMPLE.md](EXAMPLE.md). A live "raw" version of the same
-algorithm, where each step runs in its own cell and shows its result immediately,
-is in [`debug.ipynb`](debug.ipynb).
+operation, is in [EXAMPLE.md](EXAMPLE.md). The exploration notebook with
+measurements and rejected ideas is [`segmentation.ipynb`](segmentation.ipynb).
 
 ---
 
@@ -72,7 +71,7 @@ built in the space of "plan minus barrier".
 | Top-down, near-orthographic view | dominant line directions within ±6° of 0°/90°, no rectification needed |
 | The page background is white and simply connected | holds on all three |
 | The outer contour of the plan is a wall | holds on all three; step 2 depends on it |
-| Walls are distinguishable from the floor by colour | ΔE ≳ 18 in Lab; the third render is borderline |
+| Walls are distinguishable from the floor by colour | distance ≳ 18 in OpenCV 8-bit Lab (≈ 7 L\* units); the third render is borderline |
 | Occlusion is limited | a wall hides a strip of floor on its shaded side — not compensated |
 
 ---
@@ -103,8 +102,8 @@ optional.
 
 ## Step 1. Separating the plan from the background
 
-**Code:** `floorplan_seg/preprocess.py:61-96`, helper `_fill_interior_holes` on
-lines 48-58.
+**Code:** `floorplan_seg/preprocess.py:62-97`, helper `_fill_interior_holes` on
+lines 48-59.
 
 **Input:** a BGR image. **Output:** a boolean `plan` mask.
 
@@ -181,7 +180,7 @@ three renders.
 
 ## Step 2. Wall colour for this particular image
 
-**Code:** `floorplan_seg/preprocess.py:99-135`.
+**Code:** `floorplan_seg/preprocess.py:100-136`.
 
 **Input:** the image and `plan`. **Output:** a vector of three numbers — the
 median wall colour in CIELAB.
@@ -243,20 +242,27 @@ The ring contains on the order of 17,000–21,000 pixels, which is plenty.
 
 ## Step 3. Wall mask and barrier
 
-**Code:** `floorplan_seg/preprocess.py:159-192`, shape filter
-`_drop_compact_blobs` on lines 138-156.
+**Code:** `floorplan_seg/preprocess.py:162-206`, shape filter
+`_drop_compact_blobs` on lines 139-159.
 
 **Input:** the image, `plan`, the wall colour. **Output:** `wall` and `barrier`.
 
 ### 3.1. Colour threshold
 
-For every pixel, the Euclidean distance to the wall colour in Lab (the "delta E"):
+For every pixel, the Euclidean distance to the wall colour in Lab (the "delta E"
+below — with a caveat on units after the code):
 
 ```python
 delta = np.linalg.norm(lab - wall_lab, axis=2)
 raw = plan & (delta < WALL_DELTA_E)          # threshold 18
 raw = cv.morphologyEx(raw, cv.MORPH_OPEN, np.ones((3, 3)))
 ```
+
+> **Units.** The image is converted with `cv.COLOR_BGR2LAB` on 8-bit data, so
+> `L` is scaled to 0–255 (×2.55 against CIELAB L\*) and `a`, `b` are offset by
+> 128. The threshold of 18 is therefore a distance in that encoding, not a CIE
+> ΔE\*ab: along `L` it corresponds to about 7 L\* units, along `a`/`b` to 18.
+> (This is also why the swatch in EXAMPLE.md reads `Lab = [219, 127, 129]`.)
 
 Morphological opening (erosion followed by dilation) removes isolated speckle and
 thin spurious bridges without touching the large structures.
@@ -287,7 +293,10 @@ In practice 31–82 blobs are dropped per image.
 
 ### 3.3. The barrier
 
-The found walls are dilated so that the shaded side face is covered:
+The found walls are dilated with a square kernel of side `WALL_DILATE` so that
+the shaded side face is covered. The default 3×3 kernel adds **one pixel on each
+side** of the wall (the parameter is a kernel size, not a radius); 0 or 1
+disables the dilation:
 
 ```python
 barrier = cv.dilate(wall, np.ones((WALL_DILATE, WALL_DILATE))) & plan
@@ -305,7 +314,7 @@ perimeter of every room, which is why areas come out systematically low (see
 
 ## Step 4. Distance map — the "terrain"
 
-**Code:** `floorplan_seg/seeds.py:149-155`.
+**Code:** `floorplan_seg/seeds.py:171-177`.
 
 Free space is the plan without the barrier. For each of its pixels we compute the
 Euclidean distance to the nearest wall:
@@ -340,7 +349,7 @@ nearest wall.
 
 ## Step 5. Markers via h-maxima
 
-**Code:** `floorplan_seg/seeds.py:157-159`.
+**Code:** `floorplan_seg/seeds.py:179-191`.
 
 The watershed has to start somewhere — one seed point per room.
 
@@ -379,7 +388,7 @@ all (a degenerate input), the whole free space is declared one room.
 
 ## Step 6. Watershed
 
-**Code:** `floorplan_seg/seeds.py:161`.
+**Code:** `floorplan_seg/seeds.py:193`.
 
 ```python
 labels = watershed(-smoothed, markers, mask=free)
@@ -399,8 +408,8 @@ have been cut one time too many.*
 
 ## Step 7. Merging by boundary width
 
-**Code:** `floorplan_seg/seeds.py:87-101`, adjacency in `_adjacency` (lines
-52-76), union-find in `_DisjointSet` (lines 33-49).
+**Code:** `floorplan_seg/seeds.py:89-103`, adjacency in `_adjacency` (lines
+54-78), union-find in `_DisjointSet` (lines 35-51).
 
 ### The problem
 
@@ -463,7 +472,8 @@ The new identifier of a group is always the smallest of the ones being merged
 
 ## Step 8. Absorbing small regions
 
-**Code:** `floorplan_seg/seeds.py:104-124`, renumbering on lines 79-84.
+**Code:** `floorplan_seg/seeds.py:115-145`, nearest-region lookup in
+`_nearest_label` (lines 106-112), renumbering on lines 81-86.
 
 After merging, tiny offcuts remain — fractions of a percent of the area. In a
 loop:
@@ -476,7 +486,11 @@ loop:
 
 The threshold is a fraction of the plan area: `0.004 × plan.sum()`, that is,
 roughly 1,300–1,700 pixels on these images. An isolated islet with no neighbours
-is simply zeroed out.
+(free space enclosed by barrier on every side) is attached to the nearest
+full-sized region by Euclidean distance rather than discarded, so the regions
+keep tiling the free space and no area is lost. Full-sized regions are
+preferred so that an islet cannot rescue another undersized scrap from
+absorption.
 
 The labels are then renumbered consecutively (1, 2, 3, …), because merging leaves
 gaps in the numbering.
@@ -668,10 +682,10 @@ overridden from the CLI without touching the code.
 | `bg_flood_tol` | 6 | — | background fill tolerance | the background is not perfectly white |
 | `wall_ring_inner` | 2 | — | ring offset from the edge | — |
 | `wall_ring_outer` | 9 | — | outer bound of the ring | — |
-| `wall_delta_e` | 18.0 | `--wall-delta-e` | closeness to the wall colour | walls broken → raise; floor eaten → lower |
+| `wall_delta_e` | 18.0 | `--wall-delta-e` | closeness to the wall colour, OpenCV 8-bit Lab units | walls broken → raise; floor eaten → lower |
 | `wall_min_component_frac` | 0.02 | — | component area threshold | — |
 | `wall_min_elongation` | 4.0 | — | elongation threshold | — |
-| `wall_dilate` | 3 | `--wall-dilate` | barrier thickness | rooms leaking through door frames → raise |
+| `wall_dilate` | 3 | `--wall-dilate` | barrier dilation kernel side (px); 3 = 1 px rim | rooms leaking through door frames → raise |
 | `smooth_sigma` | 2.0 | — | blur of the distance map | — |
 | `h_maxima` | 10.0 | `--h-maxima` | marker significance | too many rooms → raise; rooms merged → lower |
 | `passage_merge_width` | 16.0 | `--merge-width` | doorway width cut-off | open areas fragmented → raise |
@@ -784,7 +798,9 @@ Which function implements which step:
 | 3 | `preprocess.wall_mask` (+ `_drop_compact_blobs`) |
 | 4–8 | `seeds.region_labels` (+ `_adjacency`, `_merge_open_boundaries`, `_absorb_small_regions`) |
 | 9 | `export.room_polygon`, `export.to_record`, `pipeline._build_rooms` |
-| 10 | `semantics.request_labels`, `semantics.apply_labels`, `semantics.split_region_by_zones` |
+| 10 | `pipeline.label_rooms` → `semantics.request_labels`, `semantics.apply_labels`, `semantics.split_region_by_zones` |
 
 The entry point that ties it all together: `pipeline.segment_floorplan`
-(lines 123-176).
+(lines 123-176); the optional naming step is `pipeline.label_rooms`
+(lines 179-208), which the CLI calls separately so that a failing semantic
+stage cannot discard the geometric result.

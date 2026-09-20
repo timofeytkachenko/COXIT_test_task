@@ -48,7 +48,8 @@ def load_bgr(path: str | Path) -> NDArray[np.uint8]:
 def _fill_interior_holes(mask: BoolMask) -> BoolMask:
     """Fill background pockets that do not touch the image border."""
     inv = (~mask).astype(np.uint8)
-    n, labels = cv.connectedComponents(inv, 4)
+    # Background pockets are 4-connected, the dual of the 8-connected plan.
+    n, labels = cv.connectedComponents(inv, connectivity=4)
     border = np.concatenate([labels[0, :], labels[-1, :], labels[:, 0], labels[:, -1]])
     outside = set(np.unique(border).tolist())
     filled = mask.copy()
@@ -89,7 +90,7 @@ def plan_mask(bgr: NDArray[np.uint8], cfg: PreprocessConfig) -> BoolMask:
     fg = (~ff[1:-1, 1:-1].astype(bool)).astype(np.uint8)
     fg = cv.morphologyEx(fg, cv.MORPH_CLOSE, np.ones((9, 9), np.uint8))
 
-    n, labels, stats, _ = cv.connectedComponentsWithStats(fg, 8)
+    n, labels, stats, _ = cv.connectedComponentsWithStats(fg, connectivity=8)
     if n <= 1:
         raise ValueError("no foreground found; the image may be blank")
     largest = 1 + int(np.argmax(stats[1:, cv.CC_STAT_AREA]))
@@ -137,7 +138,9 @@ def estimate_wall_lab(
 
 def _drop_compact_blobs(mask: BoolMask, cfg: PreprocessConfig) -> BoolMask:
     """Keep large or elongated components; drop compact white objects."""
-    n, labels, stats, _ = cv.connectedComponentsWithStats(mask.astype(np.uint8), 8)
+    n, labels, stats, _ = cv.connectedComponentsWithStats(
+        mask.astype(np.uint8), connectivity=8
+    )
     if n <= 1:
         return mask
     areas = stats[1:, cv.CC_STAT_AREA]
@@ -177,7 +180,14 @@ def wall_mask(
     barrier : numpy.ndarray
         ``wall`` dilated to cover the shaded vertical wall face. This is what
         room regions must not cross.
+
+    Raises
+    ------
+    ValueError
+        If ``cfg.wall_dilate`` is negative.
     """
+    if cfg.wall_dilate < 0:
+        raise ValueError(f"wall_dilate must be >= 0, got {cfg.wall_dilate}")
     lab = cv.cvtColor(bgr, cv.COLOR_BGR2LAB).astype(np.float32)
     wall_lab = estimate_wall_lab(bgr, plan, cfg)
     delta = np.linalg.norm(lab - wall_lab, axis=2)
@@ -188,5 +198,9 @@ def wall_mask(
     wall = _drop_compact_blobs(raw, cfg)
 
     d = cfg.wall_dilate
+    if d <= 1:
+        # An empty kernel makes cv.dilate fall back to its default 3x3, so a
+        # requested 0 must be short-circuited rather than passed through.
+        return wall, wall & plan
     barrier = cv.dilate(wall.astype(np.uint8), np.ones((d, d), np.uint8)).astype(bool)
     return wall, barrier & plan

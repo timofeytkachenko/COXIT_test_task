@@ -1,9 +1,15 @@
 services:
   # Geometric pipeline only; no network, no API key required.
   #   docker compose run --rm segment "data/<file>.webp"
+  #
+  # The container runs as uid 1000 by default. If your host user is not
+  # uid 1000, match it (or put HOST_UID/HOST_GID in .env) so that ./output
+  # stays writable and owned by you:
+  #   HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run --rm segment "data/<file>.webp"
   segment:
     build: .
     image: floorplan-seg:latest
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     volumes:
       - ./data:/app/data:ro
       - ./output:/app/output
@@ -19,12 +25,13 @@ services:
   segment-semantic:
     build: .
     image: floorplan-seg:latest
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     env_file:
       - path: .env
         required: false
     volumes:
       - ./data:/app/data:ro
       - ./output:/app/output
-    entrypoint: ["uv", "run", "--no-sync", "python", "-m", "floorplan_seg",
+    entrypoint: ["python", "-m", "floorplan_seg",
                  "--semantics", "--output-dir", "output/semantic"]
     command: ["data/limestone ranch_santa fe_625sq.webp"]
