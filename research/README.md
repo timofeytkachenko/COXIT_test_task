@@ -14,7 +14,7 @@ as the baseline, and compares against it.
 
 | Approach | What it replaces | Result on `data/` |
 |---|---|---|
-| [`medial-axis-doorways/`](medial-axis-doorways/ALGORITHM.md) | the h-maxima markers of step 5 | baseline 9/9/10 regions → 9/8/12 (limestone / heritage / highlandlux). Same partition on the clean render, one spurious region removed on the second, floor area recovered on the third that the baseline drops; 3 regions of total movement over a ±35 % parameter sweep against 8 for the baseline, and one bathroom wrongly cut in two. |
+| [`medial-axis-doorways/`](medial-axis-doorways/ALGORITHM.md) | the h-maxima markers of step 5 | baseline 9/9/10 regions → 9/8/12 (limestone / heritage / highlandlux). Same partition on the clean render, one spurious region removed on the second, floor area recovered on the third that the baseline drops; 2 regions of total movement over a ±35 % parameter sweep against 8 for the baseline, and one bathroom wrongly cut in two. |
 | [`superpixel-finish-split/`](superpixel-finish-split/ALGORITHM.md) | the *cut* part of the optional VLM stage (step 10) | splits the open-plan region on 2 of 3 renders with no network — 42 % → 31 %+11 %, 50 % → 33 %+16 % — and correctly declines on the render whose living room and kitchen share one plank floor. |
 
 Both documents apply the method to the three renders in `data/`, embed the

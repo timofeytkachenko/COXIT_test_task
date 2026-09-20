@@ -188,8 +188,10 @@ a "doorway" 28 px wide in a plan whose walls are 32 px thick is not a doorway.
 
 ![baseline vs medial axis, limestone ranch](assets/limestone-ranch-04-side-by-side.webp)
 
-Nine regions both ways, mean IoU 1.00, relative areas equal to the fourth
-decimal. Every room here is sealed off by the barrier, so both marker schemes
+Nine regions both ways, mean IoU 0.999, every relative area within 0.07
+percentage points of the baseline's — the only difference is a thread of floor
+that this approach labels and the baseline leaves out. Every room here is
+sealed off by the barrier, so both marker schemes
 are arbitrating nothing: the connected components carry the segmentation. The
 open-plan region (42 %) stays one region, as it must — geometry has no boundary
 to find there. That is what [the other approach](../superpixel-finish-split/ALGORITHM.md)
@@ -204,8 +206,9 @@ is about.
 *Blue: baseline boundaries. Red: this approach's. Red fill: pixels that change
 room. Almost everything coincides.*
 
-The baseline's 9th region is a 0.85 % sliver next to the balcony door; here it
-is absorbed into the open-plan area, which grows from 53.33 % to 54.26 %. The
+The baseline's 9th region is the 0.9 % niche at the top of the plan, between
+the living room and the balcony; here it is absorbed into the open-plan area,
+which grows from 53.33 % to 54.26 %. The
 other eight regions move by less than 0.2 percentage points. Whether losing
 that sliver is an improvement is a judgement call — it is not a room, but it is
 also not obviously wrong to report it.
@@ -244,7 +247,7 @@ Both methods were moved by the same relative amount, −35 % / default / +35 %
 | heritage towers | 9 / 9 / **6** | 8 / 8 / 8 |
 | highlandlux | 12 / 10 / **7** | 11 / 12 / 10 |
 | limestone ranch | 9 / 9 / 9 | 9 / 9 / 9 |
-| total spread | 8 regions | 3 regions |
+| total spread | 8 regions | 2 regions |
 
 ![parameter sweep, highlandlux](assets/highlandlux-08-sensitivity.webp)
 
@@ -306,7 +309,7 @@ cannot be evaluated, and the default would have been silently non-reproducible.
   thickness, so it survives a change of render resolution. Nothing in the three
   samples proves this — they are all near 1000 px — but the dependence is
   removed by construction.
-- **Stability.** 3 regions of total movement over a ±35 % sweep against 8, and
+- **Stability.** 2 regions of total movement over a ±35 % sweep against 8, and
   no catastrophic collapse at the upper end.
 - **No lost area.** Free-space coverage 0.993–0.999 against 0.975–0.998. The
   baseline drops unlabelled components quietly; this was found by measuring
@@ -314,13 +317,14 @@ cannot be evaluated, and the default would have been silently non-reproducible.
 - **The wide-boundary repair is not needed** — the cut is only ever made at a
   constriction, so nothing has to be merged back.
 - **Doorway widths for free**, which are a usable plausibility check.
-- Slightly faster, and 30 % faster again in the `cores` variant.
+- Cost is a wash against the baseline marker stage (0.17–0.37 s against
+  0.15–0.37 s), and the `cores` variant takes 20–35 % off that.
 
 **Got worse**
 
 - **A pinch is not a door.** The `highlandlux` bathroom is cut in two at the
-  vanity. The baseline's h-maxima happened to survive that pinch; this method
-  is built to cut there.
+  vanity. The baseline does not cut there — one distance hill spans the whole
+  bathroom — while this method is built to cut wherever the space narrows.
 - **A wide opening is not cut.** The threshold is tied to the wall thickness,
   so a wide doorway between two rooms is not treated as a passage. The
   synthetic test render in `tests/conftest.py` — 12 px walls, a 30 px opening —

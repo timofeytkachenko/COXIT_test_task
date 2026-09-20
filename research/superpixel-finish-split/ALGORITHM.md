@@ -10,11 +10,15 @@ It sits **after** the baseline, consumes its regions, and touches nothing else.
 
 **Result on the three samples in `data/`:**
 
-| Render | Baseline | This approach | Decision on the open-plan region | Pixels kept |
+| Render | Baseline | This approach | Decision on the open-plan region | Baseline partition kept |
 |---|---|---|---|---|
 | limestone ranch | 9 regions | **10** | split 42.2 % → 31.4 % + 10.9 % | 89 % |
 | highlandlux (beige) | 10 regions | **11** | split 49.8 % → 33.5 % + 16.3 % | 84 % |
 | heritage towers | 9 regions | **9** | declined — the cut wrapped the furniture | 100 % |
+
+The last column is the share of baseline pixels that stay together in one new
+region: it drops exactly by the size of the zone that was cut away, and
+everything outside the open-plan region is untouched.
 
 Two of the three renders get a plausible kitchen/living boundary with no API
 call. The third is correctly left alone, and that is the part that took the
@@ -54,11 +58,11 @@ planked, living rooms are carpeted; the boundary between the two materials is
 drawn in the image, sharp and straight, and it is usually where a floor plan
 would put the room boundary as well.
 
-![the open-plan region of limestone ranch](assets/limestone-ranch-01-input.webp)
+![the limestone ranch render](assets/limestone-ranch-01-input.webp)
 
-*The 42 % region runs from the sofa at the top to the hob at the bottom. Light
-floor above, dark plank below, and the change happens on a straight line just
-south of the island.*
+*`limestone ranch`. The 42 % region is everything on the left, from the sofa at
+the top to the hob at the bottom: light floor above, dark plank below, and the
+material changes on a straight line just south of the island.*
 
 ## 2. The idea
 
