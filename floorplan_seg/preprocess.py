@@ -192,6 +192,10 @@ def wall_mask(
                           np.ones((3, 3), np.uint8)).astype(bool)
     wall = _drop_compact_blobs(raw, cfg)
 
-    d = cfg.wall_dilate
-    barrier = cv.dilate(wall.astype(np.uint8), np.ones((d, d), np.uint8)).astype(bool)
-    return wall, barrier & plan
+    if cfg.wall_dilate <= 0:
+        barrier = wall & plan
+    else:
+        d = cfg.wall_dilate
+        barrier = cv.dilate(wall.astype(np.uint8), np.ones((d, d), np.uint8)).astype(bool)
+        barrier = barrier & plan
+    return wall, barrier
