@@ -45,6 +45,22 @@ def test_apply_labels_splits_open_plan_into_voronoi_cells() -> None:
     assert (new_labels == 3).sum() == (labels == 2).sum()
 
 
+def test_collapsed_zone_anchors_keep_region_name() -> None:
+    plan_labels = PlanLabels(
+        regions=[
+            RegionLabel(
+                id=1,
+                name="open plan",
+                zones=[Zone(name="kitchen", x=10, y=10), Zone(name="living", x=10, y=10)],
+            ),
+            RegionLabel(id=2, name="bedroom"),
+        ]
+    )
+    new_labels, names = apply_labels(_two_regions(), plan_labels, SemanticsConfig())
+    assert names == {1: "open plan", 2: "bedroom"}
+    assert np.array_equal(new_labels, _two_regions())
+
+
 def test_apply_labels_falls_back_when_model_skips_a_region() -> None:
     plan_labels = PlanLabels(regions=[RegionLabel(id=2, name="bathroom")])
     _, names = apply_labels(_two_regions(), plan_labels, SemanticsConfig())

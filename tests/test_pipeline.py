@@ -3,20 +3,32 @@
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from floorplan_seg import PipelineConfig, parse_total_sqft, segment_floorplan
-from floorplan_seg.cli import main
-from floorplan_seg.config import PreprocessConfig
+import floorplan_seg.cli
+import floorplan_seg.pipeline
+from floorplan_seg import (
+    PipelineConfig,
+    SemanticsError,
+    label_rooms,
+    parse_total_sqft,
+    segment_floorplan,
+)
+from floorplan_seg.cli import build_parser, main
+from floorplan_seg.config import PreprocessConfig, SemanticsConfig
+from floorplan_seg.export import DEFAULT_SIMPLIFY
 from floorplan_seg.preprocess import (
     _fill_interior_holes,
     load_bgr,
     plan_mask,
     wall_mask,
 )
+from floorplan_seg.seeds import _absorb_small_regions
+from floorplan_seg.semantics import PlanLabels, RegionLabel
 
 
 def test_semantic_stage_is_off_by_default() -> None:
@@ -98,3 +110,64 @@ def test_cli_missing_file_exits_cleanly(tmp_path: Path) -> None:
 def test_cli_rejects_out_of_range_tuning(two_room_path: Path, tmp_path: Path) -> None:
     assert main([str(two_room_path), "-o", str(tmp_path), "--wall-dilate", "-1"]) == 1
     assert main([str(two_room_path), "-o", str(tmp_path), "--h-maxima", "0"]) == 1
+
+
+def test_cli_semantic_failure_still_writes_geometry(
+    two_room_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail(seg, cfg):
+        raise SemanticsError("no key")
+
+    monkeypatch.setattr(floorplan_seg.cli, "label_rooms", fail)
+    assert main([str(two_room_path), "-o", str(tmp_path), "--semantics"]) == 1
+
+    record = json.loads((tmp_path / "two rooms 400sq.json").read_text(encoding="utf-8"))
+    assert len(record["rooms"]) == 2
+    assert all(r["name"] is None for r in record["rooms"])
+    assert (tmp_path / "two rooms 400sq.png").is_file()
+
+
+def test_label_rooms_names_without_mutating_input(
+    two_room_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    geometric = segment_floorplan(two_room_path)
+    ids = [room.id for room in geometric.rooms]
+    answer = PlanLabels(
+        regions=[RegionLabel(id=ids[0], name="kitchen"), RegionLabel(id=ids[1], name="bedroom")]
+    )
+    monkeypatch.setattr(
+        floorplan_seg.pipeline, "request_labels", lambda bgr, labels, cfg: answer
+    )
+
+    named = label_rooms(geometric, SemanticsConfig())
+    assert sorted(room.name for room in named.rooms) == ["bedroom", "kitchen"]
+    assert sum(room.area_px for room in named.rooms) == sum(r.area_px for r in geometric.rooms)
+    assert all(room.name is None for room in geometric.rooms)
+
+
+def test_simplify_default_is_shared_with_export() -> None:
+    assert build_parser().get_default("simplify") == DEFAULT_SIMPLIFY
+
+
+def test_pipeline_emits_no_deprecation_warning(two_room_path: Path) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        segment_floorplan(two_room_path)
+
+
+def test_isolated_islet_is_attached_to_nearest_full_sized_region() -> None:
+    # Region 1 and 4 are full-sized; 3 is an undersized scrap touching 4;
+    # islet 2 touches nothing and lies closer to 3 than to 1.
+    labels = np.zeros((40, 100), np.int32)
+    labels[:, 0:30] = 1
+    labels[18:22, 35:39] = 2
+    labels[18:22, 40:50] = 3
+    labels[:, 50:100] = 4
+    before = labels > 0
+
+    out = _absorb_small_regions(labels, np.zeros(labels.shape), min_area=100)
+
+    assert np.array_equal(out > 0, before)  # no area lost
+    assert set(np.unique(out[out > 0])) == {1, 4}
+    assert (out == 1).sum() == 40 * 30 + 16  # islet went to the full-sized 1, not scrap 3
+    assert (out == 4).sum() == 40 * 50 + 40  # scrap 3 absorbed by its neighbour 4
