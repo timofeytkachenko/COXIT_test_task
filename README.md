@@ -58,8 +58,8 @@ each other.
 ### Local (uv)
 
 ```bash
-uv sync                                   # runtime deps only
-uv sync --group dev                       # + jupyter/matplotlib for the notebook
+uv sync --no-dev                          # runtime deps only
+uv sync                                   # + jupyter/matplotlib/pytest (dev group is on by default)
 
 uv run python -m floorplan_seg "data/limestone ranch_santa fe_625sq.webp" --debug
 
@@ -68,8 +68,10 @@ uv run python -m floorplan_seg "data/limestone ranch_santa fe_625sq.webp" \
     -o output/semantic --semantics
 ```
 
-Python 3.13, dependencies: `opencv-python-headless`, `scikit-image` (+ `scipy`, `numpy`),
-`openai`, `python-dotenv`.
+Python 3.13, dependencies: `opencv-python-headless`, `scikit-image`, `scipy` (+ `numpy`),
+`openai`, `pydantic`, `python-dotenv`.
+
+Tests (no network, synthetic images): `uv run pytest`.
 
 ---
 

@@ -3,12 +3,11 @@
 This document walks through the pipeline step by step: what each stage does, why
 it is built that way, what its parameters are and where it lives in the code. A
 short overview is in [README.md](README.md); this is the same thing with the
-implementation details. Russian version: [ALGORITHM_RU.md](ALGORITHM_RU.md).
+implementation details.
 
 A worked example on one concrete image, with a picture after every single
-operation, is in [EXAMPLE.md](EXAMPLE.md). A live "raw" version of the same
-algorithm, where each step runs in its own cell and shows its result immediately,
-is in [`debug.ipynb`](debug.ipynb).
+operation, is in [EXAMPLE.md](EXAMPLE.md). The exploration notebook with
+measurements and rejected ideas is [`segmentation.ipynb`](segmentation.ipynb).
 
 ---
 
@@ -103,8 +102,8 @@ optional.
 
 ## Step 1. Separating the plan from the background
 
-**Code:** `floorplan_seg/preprocess.py:61-96`, helper `_fill_interior_holes` on
-lines 48-58.
+**Code:** `floorplan_seg/preprocess.py:62-97`, helper `_fill_interior_holes` on
+lines 48-59.
 
 **Input:** a BGR image. **Output:** a boolean `plan` mask.
 
@@ -181,7 +180,7 @@ three renders.
 
 ## Step 2. Wall colour for this particular image
 
-**Code:** `floorplan_seg/preprocess.py:99-135`.
+**Code:** `floorplan_seg/preprocess.py:100-136`.
 
 **Input:** the image and `plan`. **Output:** a vector of three numbers — the
 median wall colour in CIELAB.
@@ -243,8 +242,8 @@ The ring contains on the order of 17,000–21,000 pixels, which is plenty.
 
 ## Step 3. Wall mask and barrier
 
-**Code:** `floorplan_seg/preprocess.py:159-192`, shape filter
-`_drop_compact_blobs` on lines 138-156.
+**Code:** `floorplan_seg/preprocess.py:162-206`, shape filter
+`_drop_compact_blobs` on lines 139-159.
 
 **Input:** the image, `plan`, the wall colour. **Output:** `wall` and `barrier`.
 
@@ -787,4 +786,4 @@ Which function implements which step:
 | 10 | `semantics.request_labels`, `semantics.apply_labels`, `semantics.split_region_by_zones` |
 
 The entry point that ties it all together: `pipeline.segment_floorplan`
-(lines 123-176).
+(lines 123-179).

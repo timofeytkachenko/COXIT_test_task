@@ -5,8 +5,7 @@ showing the result after every operation — not after every stage, but after ev
 transformation. All the numbers in the text were measured on this exact file.
 
 A description of the algorithm without a specific image is in
-[ALGORITHM.md](ALGORITHM.md). The same walkthrough as executable cells is in
-[`debug.ipynb`](debug.ipynb). Russian version: [EXAMPLE_RU.md](EXAMPLE_RU.md).
+[ALGORITHM.md](ALGORITHM.md).
 
 **Source file:** `data/heritage towers_a1_1 Bed 1 Bath 593 Sq. Ft..webp`,
 1140 × 855 pixels.
