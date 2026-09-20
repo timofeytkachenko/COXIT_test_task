@@ -80,8 +80,9 @@ class SemanticsConfig:
     Attributes
     ----------
     enabled
-        When ``False`` the pipeline returns geometric regions without labels
-        and without splitting open-plan areas.
+        When ``False`` (the default) the pipeline returns geometric regions
+        without labels and without splitting open-plan areas. Enabling it
+        makes a network call to the OpenAI API and needs ``OPENAI_API_KEY``.
     model
         Chat-completions model identifier.
     api_key_env
@@ -98,7 +99,7 @@ class SemanticsConfig:
         Per-request timeout in seconds.
     """
 
-    enabled: bool = True
+    enabled: bool = False
     model: str = "gpt-4o"
     api_key_env: str = "OPENAI_API_KEY"
     max_image_side: int = 1280
