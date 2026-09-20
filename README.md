@@ -50,7 +50,9 @@ docker compose run --rm segment-semantic "data/limestone ranch_santa fe_625sq.we
 docker compose run --rm segment --help
 ```
 
-`./data` is mounted read-only, `./output` is mounted for results. The `segment-semantic`
+`./data` is mounted read-only, `./output` is mounted for results. The container runs as
+uid 1000, so results are not root-owned; if your user has a different uid, run
+`HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose run …` (or put both in `.env`). The `segment-semantic`
 service is the same image plus `.env`, and its entrypoint already carries `--semantics`
 and `--output-dir output/semantic`, so geometric and named results never overwrite
 each other.
@@ -134,18 +136,20 @@ render ─► plan mask ─► wall mask ─► barrier ─► distance-transfor
    thin ring just inside the plan outline. The outline is always exterior wall, so this is a
    reliable prior and it adapts to each provider's palette. A fixed global threshold worked
    on two of the three samples and failed on the third (beige floor almost as bright as walls).
-3. **Wall mask → barrier** (`preprocess.wall_mask`). Pixels within ΔE < 18 of the wall colour,
+3. **Wall mask → barrier** (`preprocess.wall_mask`). Pixels within distance 18 of the wall colour
+   in OpenCV's 8-bit Lab encoding (≈ 7 CIELAB L\* units — not a CIE ΔE, see ALGORITHM.md),
    opened 3×3, then connected components that are neither large nor elongated are dropped
    (white sanitary ware, light furniture). The full wall network is normally one large
-   component, so this filter keeps structure and drops objects. The result is dilated 3 px
-   so the shaded vertical face also acts as a barrier.
+   component, so this filter keeps structure and drops objects. The result is dilated with a
+   3×3 kernel (one pixel on each side) so the shaded vertical face also acts as a barrier.
 4. **Regions** (`seeds.region_labels`). Euclidean distance transform of the free space
    (plan minus barrier), smoothed σ=2, markers from an **h-maxima** transform (h=10),
    watershed on the negated distance. This splits free space at its narrowest points, which
    is where doorways are. Two corrections follow:
    - adjacent regions whose shared boundary is wider than 16 px are merged — a doorway is
      narrow, a boundary that merely cuts across an open area is not;
-   - regions under 0.4 % of the plan are absorbed into the neighbour they touch most.
+   - regions under 0.4 % of the plan are absorbed into the neighbour they touch most; an
+     enclosed scrap that touches nothing is attached to the nearest room, so no area is lost.
 5. **Export** (`export`). Largest external contour per room, Douglas–Peucker simplified at
    0.4 % of perimeter; relative area = room px / all room px; annotated PNG with tinted
    regions, outlines and share labels.
@@ -158,7 +162,7 @@ Every stage is a pure function on NumPy arrays; `--debug` writes `plan.png`, `wa
 | Render | Regions found | True rooms (approx.) | Notes |
 |---|---|---|---|
 | limestone ranch | 9 | ~10 | all rooms separated; kitchen+living+entry are one open-plan region |
-| heritage towers | 9 | ~9 | same open-plan merge; bedroom 112 sq ft vs 126 from the printed `11'9" x 10'9"` (−11 %) |
+| heritage towers | 9 | ~9 | same open-plan merge; bedroom 111.5 sq ft vs 126 from the printed `11'9" x 10'9"` (−12 %) |
 | highlandlux | 10 | ~7 | warm beige palette; walls under-detected, some spurious splits |
 
 Relative areas sum to 1.0 by construction. Where the file name carries the advertised total
@@ -188,7 +192,8 @@ Details and figures are in `segmentation.ipynb`.
   need it.
 - **Walls are the brightest, least saturated large structure** and the plan's outer boundary
   is wall. Both hold for typical marketing renders (3DPlans.com style).
-- **Floor and wall colours are distinguishable** (ΔE ≳ 18 in Lab). The third sample is close
+- **Floor and wall colours are distinguishable** (distance ≳ 18 in OpenCV 8-bit Lab, about
+  7 L\* units). The third sample is close
   to this limit and shows what happens when it is violated.
 - **Limited occlusion.** Extruded walls hide a strip of floor along their far side; furniture
   covers floor but does not enclose it. Neither is compensated.
@@ -234,7 +239,8 @@ matter as *light manual correction* when a render is off-distribution:
 (set-of-mark prompting, structured output). The model names each region and, for a region
 holding several functional zones, returns anchor points; the region is then split into
 geodesic Voronoi cells around them. This stage needs `OPENAI_API_KEY` in `.env` (never
-committed; see `.gitignore`).
+committed; see `.gitignore`). If it fails — no key, API error, refusal — the geometric
+result is still written (with `"name": null`) and the exit code is 1.
 
 ```bash
 # Docker: the service mounts .env and already passes --semantics
