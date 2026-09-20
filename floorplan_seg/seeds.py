@@ -15,6 +15,8 @@ those requires semantics, not geometry.
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy import ndimage as ndi
@@ -101,10 +103,26 @@ def _merge_open_boundaries(
     return out
 
 
+def _nearest_label(labels: LabelMap, islet: int, candidates: NDArray[np.int64]) -> int:
+    """Label among ``candidates`` closest (Euclidean) to the islet's pixels."""
+    targets = np.isin(labels, candidates)
+    _, (iy, ix) = ndi.distance_transform_edt(~targets, return_indices=True)
+    member = labels == islet
+    nearest = labels[iy[member], ix[member]]
+    return int(np.bincount(nearest).argmax())
+
+
 def _absorb_small_regions(
     labels: LabelMap, distance: NDArray[np.float64], min_area: int
 ) -> LabelMap:
-    """Absorb undersized regions into the neighbour they touch most."""
+    """Absorb undersized regions into the neighbour they touch most.
+
+    An islet that touches nothing (free space enclosed by barrier on every
+    side) is attached to the nearest full-sized region instead of being
+    discarded, so that the regions keep tiling the free space and no area is
+    lost. Full-sized regions are preferred so that an islet cannot rescue
+    another undersized scrap from absorption.
+    """
     labels = labels.copy()
     while True:
         present, counts = np.unique(labels[labels > 0], return_counts=True)
@@ -118,10 +136,13 @@ def _absorb_small_regions(
             for (a, b), (contact, _) in adjacency.items()
             if smallest in (a, b)
         }
-        if not neighbours:
-            labels[labels == smallest] = 0
-            continue
-        labels[labels == smallest] = max(neighbours, key=lambda k: neighbours[k])
+        if neighbours:
+            target = max(neighbours, key=lambda k: neighbours[k])
+        else:
+            others = present[present != smallest]
+            full_sized = others[counts[present != smallest] >= min_area]
+            target = _nearest_label(labels, smallest, full_sized if full_sized.size else others)
+        labels[labels == smallest] = target
 
 
 def region_labels(
@@ -143,8 +164,9 @@ def region_labels(
     labels : numpy.ndarray
         ``(H, W)`` int32 label map numbered 1..N, 0 for background.
     distance
-        Euclidean distance transform of the free space, reused downstream to
-        place prompt points at the most interior pixel of each room.
+        Euclidean distance transform of the free space. Returned for
+        inspection (debug figures, notebooks); the pipeline itself does not
+        consume it.
     """
     free = plan & ~barrier
     distance = ndi.distance_transform_edt(free)
@@ -154,7 +176,17 @@ def region_labels(
         else distance
     )
 
-    markers, n_markers = ndi.label(h_maxima(smoothed * free, cfg.h_maxima) * free)
+    with warnings.catch_warnings():
+        # scikit-image 0.26 still assigns ``arr.shape = ...`` in its
+        # reconstruction code, which NumPy 2.5 deprecates; nothing to fix here.
+        warnings.filterwarnings(
+            "ignore",
+            message="Setting the shape on a NumPy array has been deprecated",
+            category=DeprecationWarning,
+            module=r"skimage\.morphology\.grayreconstruct",
+        )
+        peaks = h_maxima(smoothed * free, cfg.h_maxima)
+    markers, n_markers = ndi.label(peaks * free)
     if n_markers == 0:
         markers = free.astype(np.int32)
 
