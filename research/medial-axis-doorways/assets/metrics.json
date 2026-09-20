@@ -1,0 +1,647 @@
+{
+  "config": {
+    "passage_scale": 0.5,
+    "passage_half_width": null,
+    "marker_source": "ridge",
+    "min_ridge_px": 25,
+    "min_core_px": 25,
+    "rng_seed": 0,
+    "merge_width": 16.0,
+    "min_region_area_frac": 0.004
+  },
+  "results": [
+    {
+      "image": "heritage towers_a1_1 Bed 1 Bath 593 Sq. Ft..webp",
+      "short_name": "heritage-towers",
+      "marker_source": "ridge",
+      "wall_thickness_px": 20.0,
+      "passage_half_width_px": 10.0,
+      "passage_markers": 13,
+      "markers": 52,
+      "free_space_covered": 1.0,
+      "baseline_free_space_covered": 0.992,
+      "regions_before_postprocess": 52,
+      "baseline_regions": 9,
+      "approach_regions": 8,
+      "baseline_cuts": {
+        "length_px": 54,
+        "median_width_px": 7.60555127546399,
+        "open_cut_frac": 0.0
+      },
+      "approach_cuts": {
+        "length_px": 8,
+        "median_width_px": 5.0,
+        "open_cut_frac": 0.0
+      },
+      "agreement_vs_baseline": {
+        "pixel_agreement": 0.9998,
+        "mean_iou": 0.9742
+      },
+      "passages": [
+        {
+          "rooms": [
+            7,
+            8
+          ],
+          "x": 742,
+          "y": 610,
+          "width_px": 8.0
+        }
+      ],
+      "baseline_rooms": [
+        {
+          "id": 6,
+          "area_px": 160936,
+          "relative_area": 0.5333,
+          "share_of_plan": 0.3783
+        },
+        {
+          "id": 3,
+          "area_px": 56720,
+          "relative_area": 0.188,
+          "share_of_plan": 0.1333
+        },
+        {
+          "id": 7,
+          "area_px": 37094,
+          "relative_area": 0.1229,
+          "share_of_plan": 0.0872
+        },
+        {
+          "id": 8,
+          "area_px": 20383,
+          "relative_area": 0.0675,
+          "share_of_plan": 0.0479
+        },
+        {
+          "id": 2,
+          "area_px": 12848,
+          "relative_area": 0.0426,
+          "share_of_plan": 0.0302
+        },
+        {
+          "id": 4,
+          "area_px": 5776,
+          "relative_area": 0.0191,
+          "share_of_plan": 0.0136
+        },
+        {
+          "id": 5,
+          "area_px": 2725,
+          "relative_area": 0.009,
+          "share_of_plan": 0.0064
+        },
+        {
+          "id": 1,
+          "area_px": 2697,
+          "relative_area": 0.0089,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 9,
+          "area_px": 2578,
+          "relative_area": 0.0085,
+          "share_of_plan": 0.0061
+        }
+      ],
+      "approach_rooms": [
+        {
+          "id": 2,
+          "area_px": 165012,
+          "relative_area": 0.5425,
+          "share_of_plan": 0.3879
+        },
+        {
+          "id": 3,
+          "area_px": 56722,
+          "relative_area": 0.1865,
+          "share_of_plan": 0.1333
+        },
+        {
+          "id": 6,
+          "area_px": 37094,
+          "relative_area": 0.1219,
+          "share_of_plan": 0.0872
+        },
+        {
+          "id": 7,
+          "area_px": 20826,
+          "relative_area": 0.0685,
+          "share_of_plan": 0.049
+        },
+        {
+          "id": 1,
+          "area_px": 13350,
+          "relative_area": 0.0439,
+          "share_of_plan": 0.0314
+        },
+        {
+          "id": 4,
+          "area_px": 5776,
+          "relative_area": 0.019,
+          "share_of_plan": 0.0136
+        },
+        {
+          "id": 5,
+          "area_px": 2911,
+          "relative_area": 0.0096,
+          "share_of_plan": 0.0068
+        },
+        {
+          "id": 8,
+          "area_px": 2506,
+          "relative_area": 0.0082,
+          "share_of_plan": 0.0059
+        }
+      ],
+      "sensitivity": [
+        {
+          "method": "baseline",
+          "parameter": "h=6.5",
+          "regions": 9
+        },
+        {
+          "method": "baseline",
+          "parameter": "h=10",
+          "regions": 9
+        },
+        {
+          "method": "baseline",
+          "parameter": "h=13.5",
+          "regions": 6
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.325",
+          "regions": 8
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.5",
+          "regions": 8
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.675",
+          "regions": 8
+        }
+      ],
+      "marker_variant": {
+        "source": "cores",
+        "regions": 8,
+        "vs_primary": {
+          "pixel_agreement": 1.0,
+          "mean_iou": 1.0
+        }
+      },
+      "tie_break_stability": {
+        "trials": 6,
+        "region_counts": [
+          8,
+          8,
+          8,
+          8,
+          8,
+          8
+        ],
+        "distinct": [
+          8
+        ]
+      }
+    },
+    {
+      "image": "highlandlux-citadel-1 Bed 1 Bath 623 Sq. Ft..webp",
+      "short_name": "highlandlux",
+      "marker_source": "ridge",
+      "wall_thickness_px": 32.0,
+      "passage_half_width_px": 16.0,
+      "passage_markers": 7,
+      "markers": 33,
+      "free_space_covered": 0.9946,
+      "baseline_free_space_covered": 0.9747,
+      "regions_before_postprocess": 33,
+      "baseline_regions": 10,
+      "approach_regions": 12,
+      "baseline_cuts": {
+        "length_px": 3,
+        "median_width_px": 2.0,
+        "open_cut_frac": 0.0
+      },
+      "approach_cuts": {
+        "length_px": 36,
+        "median_width_px": 13.111328169932218,
+        "open_cut_frac": 0.0
+      },
+      "agreement_vs_baseline": {
+        "pixel_agreement": 0.9813,
+        "mean_iou": 0.9684
+      },
+      "passages": [
+        {
+          "rooms": [
+            5,
+            6
+          ],
+          "x": 593,
+          "y": 434,
+          "width_px": 4.0
+        },
+        {
+          "rooms": [
+            3,
+            4
+          ],
+          "x": 361,
+          "y": 162,
+          "width_px": 27.8
+        }
+      ],
+      "baseline_rooms": [
+        {
+          "id": 2,
+          "area_px": 103477,
+          "relative_area": 0.4978,
+          "share_of_plan": 0.3217
+        },
+        {
+          "id": 7,
+          "area_px": 47892,
+          "relative_area": 0.2304,
+          "share_of_plan": 0.1489
+        },
+        {
+          "id": 9,
+          "area_px": 22391,
+          "relative_area": 0.1077,
+          "share_of_plan": 0.0696
+        },
+        {
+          "id": 3,
+          "area_px": 14768,
+          "relative_area": 0.071,
+          "share_of_plan": 0.0459
+        },
+        {
+          "id": 4,
+          "area_px": 8552,
+          "relative_area": 0.0411,
+          "share_of_plan": 0.0266
+        },
+        {
+          "id": 5,
+          "area_px": 2913,
+          "relative_area": 0.014,
+          "share_of_plan": 0.0091
+        },
+        {
+          "id": 10,
+          "area_px": 2891,
+          "relative_area": 0.0139,
+          "share_of_plan": 0.009
+        },
+        {
+          "id": 8,
+          "area_px": 2041,
+          "relative_area": 0.0098,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 6,
+          "area_px": 1538,
+          "relative_area": 0.0074,
+          "share_of_plan": 0.0048
+        },
+        {
+          "id": 1,
+          "area_px": 1414,
+          "relative_area": 0.0068,
+          "share_of_plan": 0.0044
+        }
+      ],
+      "approach_rooms": [
+        {
+          "id": 1,
+          "area_px": 105208,
+          "relative_area": 0.496,
+          "share_of_plan": 0.3271
+        },
+        {
+          "id": 5,
+          "area_px": 47891,
+          "relative_area": 0.2258,
+          "share_of_plan": 0.1489
+        },
+        {
+          "id": 7,
+          "area_px": 22499,
+          "relative_area": 0.1061,
+          "share_of_plan": 0.07
+        },
+        {
+          "id": 2,
+          "area_px": 14919,
+          "relative_area": 0.0703,
+          "share_of_plan": 0.0464
+        },
+        {
+          "id": 3,
+          "area_px": 4678,
+          "relative_area": 0.0221,
+          "share_of_plan": 0.0145
+        },
+        {
+          "id": 4,
+          "area_px": 3881,
+          "relative_area": 0.0183,
+          "share_of_plan": 0.0121
+        },
+        {
+          "id": 9,
+          "area_px": 3874,
+          "relative_area": 0.0183,
+          "share_of_plan": 0.012
+        },
+        {
+          "id": 12,
+          "area_px": 2891,
+          "relative_area": 0.0136,
+          "share_of_plan": 0.009
+        },
+        {
+          "id": 6,
+          "area_px": 2042,
+          "relative_area": 0.0096,
+          "share_of_plan": 0.0063
+        },
+        {
+          "id": 10,
+          "area_px": 1538,
+          "relative_area": 0.0073,
+          "share_of_plan": 0.0048
+        },
+        {
+          "id": 8,
+          "area_px": 1414,
+          "relative_area": 0.0067,
+          "share_of_plan": 0.0044
+        },
+        {
+          "id": 11,
+          "area_px": 1295,
+          "relative_area": 0.0061,
+          "share_of_plan": 0.004
+        }
+      ],
+      "sensitivity": [
+        {
+          "method": "baseline",
+          "parameter": "h=6.5",
+          "regions": 12
+        },
+        {
+          "method": "baseline",
+          "parameter": "h=10",
+          "regions": 10
+        },
+        {
+          "method": "baseline",
+          "parameter": "h=13.5",
+          "regions": 7
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.325",
+          "regions": 11
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.5",
+          "regions": 12
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.675",
+          "regions": 10
+        }
+      ],
+      "marker_variant": {
+        "source": "cores",
+        "regions": 12,
+        "vs_primary": {
+          "pixel_agreement": 1.0,
+          "mean_iou": 1.0
+        }
+      },
+      "tie_break_stability": {
+        "trials": 6,
+        "region_counts": [
+          12,
+          12,
+          12,
+          12,
+          12,
+          11
+        ],
+        "distinct": [
+          11,
+          12
+        ]
+      }
+    },
+    {
+      "image": "limestone ranch_santa fe_625sq.webp",
+      "short_name": "limestone-ranch",
+      "marker_source": "ridge",
+      "wall_thickness_px": 24.0,
+      "passage_half_width_px": 12.0,
+      "passage_markers": 10,
+      "markers": 17,
+      "free_space_covered": 1.0,
+      "baseline_free_space_covered": 0.9976,
+      "regions_before_postprocess": 17,
+      "baseline_regions": 9,
+      "approach_regions": 9,
+      "baseline_cuts": {
+        "length_px": 0,
+        "median_width_px": 0.0,
+        "open_cut_frac": 0.0
+      },
+      "approach_cuts": {
+        "length_px": 0,
+        "median_width_px": 0.0,
+        "open_cut_frac": 0.0
+      },
+      "agreement_vs_baseline": {
+        "pixel_agreement": 1.0,
+        "mean_iou": 0.9976
+      },
+      "passages": [],
+      "baseline_rooms": [
+        {
+          "id": 3,
+          "area_px": 129628,
+          "relative_area": 0.4222,
+          "share_of_plan": 0.311
+        },
+        {
+          "id": 4,
+          "area_px": 81189,
+          "relative_area": 0.2645,
+          "share_of_plan": 0.1948
+        },
+        {
+          "id": 8,
+          "area_px": 37097,
+          "relative_area": 0.1208,
+          "share_of_plan": 0.089
+        },
+        {
+          "id": 5,
+          "area_px": 22314,
+          "relative_area": 0.0727,
+          "share_of_plan": 0.0535
+        },
+        {
+          "id": 9,
+          "area_px": 12320,
+          "relative_area": 0.0401,
+          "share_of_plan": 0.0296
+        },
+        {
+          "id": 2,
+          "area_px": 9449,
+          "relative_area": 0.0308,
+          "share_of_plan": 0.0227
+        },
+        {
+          "id": 7,
+          "area_px": 7233,
+          "relative_area": 0.0236,
+          "share_of_plan": 0.0174
+        },
+        {
+          "id": 1,
+          "area_px": 4454,
+          "relative_area": 0.0145,
+          "share_of_plan": 0.0107
+        },
+        {
+          "id": 6,
+          "area_px": 3322,
+          "relative_area": 0.0108,
+          "share_of_plan": 0.008
+        }
+      ],
+      "approach_rooms": [
+        {
+          "id": 4,
+          "area_px": 130113,
+          "relative_area": 0.4228,
+          "share_of_plan": 0.3122
+        },
+        {
+          "id": 3,
+          "area_px": 81446,
+          "relative_area": 0.2647,
+          "share_of_plan": 0.1954
+        },
+        {
+          "id": 9,
+          "area_px": 37097,
+          "relative_area": 0.1205,
+          "share_of_plan": 0.089
+        },
+        {
+          "id": 5,
+          "area_px": 22314,
+          "relative_area": 0.0725,
+          "share_of_plan": 0.0535
+        },
+        {
+          "id": 8,
+          "area_px": 12320,
+          "relative_area": 0.04,
+          "share_of_plan": 0.0296
+        },
+        {
+          "id": 1,
+          "area_px": 9449,
+          "relative_area": 0.0307,
+          "share_of_plan": 0.0227
+        },
+        {
+          "id": 7,
+          "area_px": 7233,
+          "relative_area": 0.0235,
+          "share_of_plan": 0.0174
+        },
+        {
+          "id": 2,
+          "area_px": 4454,
+          "relative_area": 0.0145,
+          "share_of_plan": 0.0107
+        },
+        {
+          "id": 6,
+          "area_px": 3322,
+          "relative_area": 0.0108,
+          "share_of_plan": 0.008
+        }
+      ],
+      "sensitivity": [
+        {
+          "method": "baseline",
+          "parameter": "h=6.5",
+          "regions": 9
+        },
+        {
+          "method": "baseline",
+          "parameter": "h=10",
+          "regions": 9
+        },
+        {
+          "method": "baseline",
+          "parameter": "h=13.5",
+          "regions": 9
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.325",
+          "regions": 9
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.5",
+          "regions": 9
+        },
+        {
+          "method": "medial axis",
+          "parameter": "scale=0.675",
+          "regions": 9
+        }
+      ],
+      "marker_variant": {
+        "source": "cores",
+        "regions": 9,
+        "vs_primary": {
+          "pixel_agreement": 1.0,
+          "mean_iou": 1.0
+        }
+      },
+      "tie_break_stability": {
+        "trials": 6,
+        "region_counts": [
+          9,
+          9,
+          9,
+          9,
+          9,
+          9
+        ],
+        "distinct": [
+          9
+        ]
+      }
+    }
+  ]
+}
