@@ -129,6 +129,9 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         logger.error("%s", exc)
         return 1
+    except ValueError as exc:
+        logger.error("preprocessing failed: %s", exc)
+        return 1
     except SemanticsError as exc:
         logger.error("semantic stage failed: %s", exc)
         logger.error("re-run without --semantics for the geometric result")
